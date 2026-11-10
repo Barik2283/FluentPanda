@@ -289,6 +289,18 @@
   /* language picker */
   .lggrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .lgitem{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;border-radius:18px;background:var(--card2);border:1.5px solid var(--line);color:var(--txt);font:inherit;text-align:left;cursor:pointer;transition:transform .15s,border-color .15s}
+  .homeRow{display:flex;gap:10px;margin-bottom:12px}
+  .homeChip{flex:1;display:flex;align-items:center;gap:9px;padding:12px 14px;border-radius:16px;background:var(--card);border:1.5px solid var(--line);color:var(--txt);font:inherit;cursor:pointer;transition:transform .15s,border-color .15s;min-width:0}
+  .homeChip:active{transform:scale(.97)}
+  .homeChip b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .homeChip.prem{background:linear-gradient(135deg,rgba(246,196,83,.16),rgba(157,92,255,.16));border-color:rgba(246,196,83,.5)}
+  .pwHero{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:22px 16px;margin-bottom:16px;border-radius:20px;background:linear-gradient(140deg,rgba(246,196,83,.22),rgba(157,92,255,.2) 55%,rgba(90,184,240,.16));border:1.5px solid rgba(246,196,83,.4)}
+  .pwHero b{font-size:19px}
+  .pwStar{color:var(--warn);display:flex}
+  .pwStar svg{width:34px;height:34px;filter:drop-shadow(0 0 10px rgba(246,196,83,.55))}
+  .pwList{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .pwRow{display:flex;gap:9px;align-items:flex-start;font-size:14px;line-height:1.45}
+  .pwRow span:first-child{display:flex;margin-top:2px}
   .lgitem:active{transform:scale(.97)}
   .lgitem.on{border-color:var(--acc);box-shadow:0 0 0 3px var(--glow)}
   .lgitem b{font-size:15px;margin-top:2px}
@@ -1081,7 +1093,6 @@ const UI_STRINGS={
     daily_goal_lc:"цель дня",
     data:"Данные",
     days_row:"дней подряд",
-    demo_btn:"Открыть бесплатно (демо)",
     dictionary:"Словарь",
     doc_title:"Fluent Panda — учи языки в Telegram",
     due_label:"К повторению:",
@@ -1154,9 +1165,10 @@ const UI_STRINGS={
     ob_sub:"Веди меня по курсу: уроки открываются по порядку, за них капают монетки.",
     open:"Открыть",
     open_premium:"Открыть Premium",
-    pay_in_bot:"Оплата подключается в боте (Stars invoice)",
-    pay_note:". Оплата Premium в боевой версии идёт через Telegram Stars из бота.",
-    pay_stars:"Оплатить через Telegram Stars",
+    pay_in_bot:"Оплата и промокоды работают в Telegram — открой бота @FluentPanda_bot",
+    pay_note:". Оплата Premium — Telegram Stars через бота, промокод даёт дни бесплатно.",
+    pay_stars:"Оплатить 150 Stars",
+    pay_cancel:"Оплата отменена",
     pcs:"шт.",
     per_day:"в день",
     per_day_label:"Слов в день:",
@@ -1165,7 +1177,6 @@ const UI_STRINGS={
     pl_word:["слово","слова","слов"],
     prem_active:"Premium активен",
     prem_coins:"Premium: монетки x2",
-    prem_demo:"Premium открыт (демо)",
     prem_sub:"Сложные истории и монетки x2",
     profile:"Профиль",
     profile_saved:"Профиль сохранён",
@@ -1173,9 +1184,16 @@ const UI_STRINGS={
     pw_1:"— сложные истории на всех языках",
     pw_2:"— монетки x2 за уроки, истории и повторения",
     pw_3:"— синхронизация прогресса между устройствами",
-    pw_note:"Реальная оплата вызывает invoice бота (Telegram Stars). Кнопка «демо» открывает Premium локально, чтобы показать продукт покупателю без списания.",
+    pw_4:"— второе слово дня в боте",
+    pw_days:"30 дней",
+    pw_note:"Оплата Telegram Stars откроется прямо здесь, в приложении. После оплаты Premium включится сам, а бот пришлёт подтверждение. Промокод даёт дни бесплатно: поле ниже или /promo в боте.",
     pw_sub:"Подписка Fluent Panda Premium",
     pw_title:"Больше историй и вдвое больше монет",
+    home_prem:"Premium · 150⭐",
+    langs_search:"Найти язык…",
+    promo_apply:"Активировать",
+    promo_empty:"Введи код",
+    promo_q:"Промокод",
     q_listen_alt:"Прослушай и выбери правильный вариант",
     q_spell:"Выбери правильный вариант",
     q_stress:"Где ударение? Выбери вариант",
@@ -1317,7 +1335,6 @@ const UI_STRINGS={
     daily_goal_lc:"daily goal",
     data:"Data",
     days_row:"days in a row",
-    demo_btn:"Unlock for free (demo)",
     dictionary:"Dictionary",
     doc_title:"Fluent Panda — learn languages in Telegram",
     due_label:"Due for review:",
@@ -1390,9 +1407,10 @@ const UI_STRINGS={
     ob_sub:"Follow me through the course: lessons unlock in order, and each one earns you coins.",
     open:"Unlock",
     open_premium:"Get Premium",
-    pay_in_bot:"Payment is connected in the bot (Stars invoice)",
-    pay_note:". In production, Premium is paid with Telegram Stars via the bot.",
-    pay_stars:"Pay with Telegram Stars",
+    pay_in_bot:"Payments and promo codes work in Telegram — open @FluentPanda_bot",
+    pay_note:". Premium is paid with Telegram Stars via the bot; a promo code grants free days.",
+    pay_stars:"Pay 150 Stars",
+    pay_cancel:"Payment cancelled",
     pcs:"pcs",
     per_day:"per day",
     per_day_label:"Words per day:",
@@ -1401,7 +1419,6 @@ const UI_STRINGS={
     pl_word:["word","words"],
     prem_active:"Premium active",
     prem_coins:"Premium: coins x2",
-    prem_demo:"Premium unlocked (demo)",
     prem_sub:"Hard stories and coins x2",
     profile:"Profile",
     profile_saved:"Profile saved",
@@ -1409,9 +1426,16 @@ const UI_STRINGS={
     pw_1:"— hard stories in every language",
     pw_2:"— coins x2 for lessons, stories and reviews",
     pw_3:"— progress sync across devices",
-    pw_note:"A real payment opens the bot’s invoice (Telegram Stars). The “demo” button unlocks Premium locally so you can show the product to a buyer without charging.",
+    pw_4:"— a second word of the day in the bot",
+    pw_days:"30 days",
+    pw_note:"Telegram Stars checkout opens right here in the app. After paying, Premium turns on by itself and the bot sends a confirmation. Promo codes grant free days: field below or /promo in the bot.",
     pw_sub:"Fluent Panda Premium subscription",
     pw_title:"More stories and twice the coins",
+    home_prem:"Premium · 150⭐",
+    langs_search:"Search language…",
+    promo_apply:"Activate",
+    promo_empty:"Enter a code",
+    promo_q:"Promo code",
     q_listen_alt:"Listen and choose the correct option",
     q_spell:"Choose the correct option",
     q_stress:"Where is the stress? Choose an option",
@@ -1511,10 +1535,11 @@ const UI_STRINGS={
 function flagHtml(l,size){const L=LANGS[l]||{};return '<span class="flag" style="--s:'+(size||22)+'px"><img src="'+emojiUrl(L.flag||'')+'" alt="" data-l="'+esc(l)+'" onerror="flagErr(this)"><i>'+(L.code||'')+'</i></span>';}
 function openLangs(){
   const items=Object.keys(LANGS).map(l=>{const tot=words(l).length,ln=learnedCount(l),pc=Math.round(ln*100/Math.max(tot,1));
-    return '<button class="lgitem'+(S.lang===l?' on':'')+'" onclick="App.switchLang(\''+l+'\')">'+flagHtml(l,38)+'<b>'+esc(langName(l))+'</b><span class="muted small">'+ln+' / '+tot+' '+pl(tot,'word')+'</span><span class="lgbar"><i style="width:'+pc+'%"></i></span></button>';}).join('');
-  modal(('<h3>'+T('langs_title')+'</h3><div class="muted small" style="margin-bottom:14px">'+T('langs_sub')+'</div><div class="lggrid">')+items+'</div>');
+    return '<button class="lgitem'+(S.lang===l?' on':'')+'" data-n="'+esc(langName(l).toLowerCase())+'" onclick="App.switchLang(\''+l+'\')">'+flagHtml(l,38)+'<b>'+esc(langName(l))+'</b><span class="muted small">'+ln+' / '+tot+' '+pl(tot,'word')+'</span><span class="lgbar"><i style="width:'+pc+'%"></i></span></button>';}).join('');
+  modal(('<h3>'+T('langs_title')+'</h3><div class="muted small" style="margin-bottom:10px">'+T('langs_sub')+'</div><input id="lgSearch" placeholder="'+T('langs_search')+'" oninput="App.langsFilter(this.value)" style="margin-bottom:12px"><div class="lggrid" id="lgGrid">')+items+'</div>');
   haptic('light');
 }
+function langsFilter(v){const q=(v||'').trim().toLowerCase();document.querySelectorAll('#lgGrid .lgitem').forEach(b=>{b.style.display=!q||b.dataset.n.includes(q)?'':'none';});}
 function switchLang(l){
   if(!LANGS[l])return;
   if(S.lang===l){closeModal();return;}
@@ -1709,7 +1734,10 @@ function renderCourse(){
   const ls=lessonsFor(S.lang),st=lessonState(S.lang);
   const done=ls.filter(l=>st[l.id]&&st[l.id].done).length;
   let cur=ls.findIndex(l=>!(st[l.id]&&st[l.id].done));if(cur<0)cur=ls.length;
-  let html='<div class="card"><div class="row"><div style="flex:1"><b style="font-size:17px">'+esc(langName(S.lang))+(ruNative()?' · '+S.ruLevel:'')+'</b><div class="muted small" style="margin-top:3px">'+(ruNative()?T('ru_native_course'):T('linear_course'))+' · '+ls.length+' '+pl(ls.length,'lesson')+' · '+words().length+' '+pl(words().length,'word')+'</div><div class="bar"><i style="width:'+(ls.length?done/ls.length*100:0)+'%"></i></div></div><span class="pill acc">'+done+'/'+ls.length+'</span></div></div>';
+  let html='<div class="homeRow"><button class="homeChip" onclick="App.openLangs()">'+flagHtml(S.lang,26)+'<b style="flex:1;text-align:left">'+esc(langName(S.lang))+'</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>'+
+    (S.premium?('<button class="homeChip prem" onclick="App.openPaywall()"><span style="color:var(--warn)">'+IC.star+'</span><b style="flex:1;text-align:left">'+T('prem_active')+'</b></button>'):
+      ('<button class="homeChip prem" onclick="App.openPaywall()"><span style="color:var(--warn)">'+IC.star+'</span><b style="flex:1;text-align:left">'+T('home_prem')+'</b></button>'))+'</div>'+
+    '<div class="card"><div class="row"><div style="flex:1"><b style="font-size:17px">'+esc(langName(S.lang))+(ruNative()?' · '+S.ruLevel:'')+'</b><div class="muted small" style="margin-top:3px">'+(ruNative()?T('ru_native_course'):T('linear_course'))+' · '+ls.length+' '+pl(ls.length,'lesson')+' · '+words().length+' '+pl(words().length,'word')+'</div><div class="bar"><i style="width:'+(ls.length?done/ls.length*100:0)+'%"></i></div></div><span class="pill acc">'+done+'/'+ls.length+'</span></div></div>';
   if(ruNative())html+='<button class="btn sec sm" style="margin-top:10px" onclick="App.openRuLevel()">'+IC.cap+' '+esc(T('rulvl_change',{l:S.ruLevel}))+'</button>';html+=('<div class="h2">'+T('course_path')+'</div><div class="path">');
   ls.forEach((l,i)=>{
     const d=st[l.id]&&st[l.id].done,locked=i>cur,isCur=i===cur;
@@ -1996,10 +2024,27 @@ function setLang(l){if(!LANGS[l])return;const ch=S.lang!==l;stopSpeech();SES=nul
 function setLevel(v){S.level=v;save();header();toast((T('level')+' ')+v);}
 function setGoal(v){S.dailyGoal=Number(v);save();const g=document.getElementById('goalVal');if(g)g.textContent=v;}
 function openPaywall(){
-  modal(('<h3>Premium</h3><div class="muted small" style="margin-bottom:16px">'+T('pw_title')+'</div><div class="card" style="margin-bottom:14px"><div class="row"><span style="color:var(--warn)">')+IC.star+('</span><b style="font-size:17px">'+T('pw_sub')+'</b></div><div class="muted small" style="margin-top:10px;line-height:1.6">'+T('pw_1')+'<br>'+T('pw_2')+'<br>'+T('pw_3')+'</div><div class="row" style="margin-top:14px"><span class="big" style="font-size:28px">150</span><span class="muted">'+T('stars_month')+'<br>≈ 199 ₽</span></div></div><button class="btn" onclick="App.buyPremium()">')+IC.star+(' '+T('pay_stars')+'</button><button class="btn sec sm" style="margin-top:10px" onclick="App.demoUnlock()">'+T('demo_btn')+'</button><div class="note">'+T('pw_note')+'</div>'));
+  const perks=[T('pw_1'),T('pw_2'),T('pw_3'),T('pw_4')].map(p=>'<div class="pwRow"><span style="color:var(--good)">'+IC.check+'</span><span>'+esc(p.replace(/^— /,''))+'</span></div>').join('');
+  modal(('<div class="pwHero"><span class="pwStar">'+IC.star+'</span><b>Fluent Panda Premium</b><span class="muted small">'+T('pw_title')+'</span></div>'+
+    '<div class="card" style="margin-bottom:14px"><div class="row"><span class="big" style="font-size:30px;color:var(--warn)">150</span><span class="muted">'+T('stars_month')+'<br>≈ 199 ₽</span><span class="pill warn" style="margin-left:auto">'+T('pw_days')+'</span></div><div class="pwList">'+perks+'</div></div>'+
+    (S.premium?('<div class="note">'+T('prem_active')+' · '+T('coins_x2')+'</div>'):
+      ('<button class="btn" onclick="App.buyPremium()">'+IC.star+' '+T('pay_stars')+'</button>'+
+       '<div class="field" style="margin-top:12px"><label>'+T('promo_q')+'</label><div class="row" style="gap:8px"><input id="pwPromo" placeholder="PANDA-XXXXXX" maxlength="16" style="flex:1;text-transform:uppercase"><button class="btn sec sm" style="width:auto;padding:0 14px" onclick="App.sendPromo()">'+T('promo_apply')+'</button></div></div>'))+
+    '<div class="note">'+T('pw_note')+'</div>'));
+  haptic('light');
 }
-function buyPremium(){if(TG&&TG.openInvoice&&window.LINGUA_INVOICE){try{TG.openInvoice(window.LINGUA_INVOICE,(status)=>{if(status==='paid'){S.premium=true;pushLog('star',T('prem_active'));save();closeModal();render();toast(T('prem_active'));}});return;}catch(e){}}toast(T('pay_in_bot'));}
-function demoUnlock(){S.premium=true;pushLog('star',T('prem_demo'));save();closeModal();render();toast(T('prem_demo'));haptic('ok');}
+function buyPremium(){
+  if(TG&&TG.openInvoice&&window.LINGUA_INVOICE){
+    try{TG.openInvoice(window.LINGUA_INVOICE,(status)=>{
+      if(status==='paid'){S.premium=true;pushLog('star',T('prem_active'));save();closeModal();render();toast(T('prem_active'));haptic('ok');}
+      else if(status==='cancelled')toast(T('pay_cancel'));
+      else toast(T('pay_in_bot'));
+    });return;}catch(e){}
+  }
+  if(TG&&TG.sendData){TG.sendData(JSON.stringify({intent:'buy_premium'}));return;}
+  toast(T('pay_in_bot'));
+}
+function sendPromo(){const el=document.getElementById('pwPromo');const code=((el&&el.value)||'').trim();if(!code)return toast(T('promo_empty'));if(TG&&TG.sendData){TG.sendData(JSON.stringify({intent:'promo',code:code}));return;}toast(T('pay_in_bot'));}
 function resetAll(){modal(('<h3>'+T('reset_q')+'</h3><div class="muted small" style="margin-bottom:16px">'+T('reset_msg')+'</div><button class="btn bad" onclick="App.doReset()">'+T('reset_btn')+'</button><button class="btn sec" style="margin-top:10px" onclick="App.closeModal()">'+T('cancel')+'</button>'));}
 function doReset(){const keep={lang:S.lang,level:S.level,dailyGoal:S.dailyGoal,theme:S.theme,sound:S.sound,profile:S.profile,premium:S.premium,uiLang:S.uiLang,uiLangManual:S.uiLangManual,ruLevel:S.ruLevel};S=mergeState(keep);S.onboarded=true;save();closeModal();render();toast(T('reset_done'));}
 
@@ -2026,7 +2071,7 @@ window.App={setUiLang,setRuLevel,openRuLevel,
   editProfile,profileName,pickAvatar,pickTgPhoto,useTgName,saveProfile,buyFreeze,openCoins,
   openBell,toggleRemind,setRemindTime,
   setLang,setLevel,setGoal,toggleTheme,setTheme,toggleSound,
-  openLangs,switchLang,openPaywall,buyPremium,demoUnlock,resetAll,doReset,obLang,obDone
+  openLangs,switchLang,langsFilter,openPaywall,buyPremium,sendPromo,resetAll,doReset,obLang,obDone
 };
 
 /* ============================ Boot ============================ */
@@ -2036,6 +2081,7 @@ function syncCloud(){if(!(TG&&TG.CloudStorage))return;try{TG.CloudStorage.getIte
     const light=(TG&&TG.colorScheme==='light')||(!TG&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches);
     S.theme=light?'light':'dark';
   }
+  try{const qp=new URLSearchParams(location.search);if(qp.get('inv'))window.LINGUA_INVOICE=qp.get('inv');if(qp.get('prem')==='1'&&!S.premium){S.premium=true;pushLog('star',T('prem_active'));save();}}catch(e){}
   applyThemeVars();render();if(!S.onboarded)onboarding();loadTG();
 })();
 </script>
