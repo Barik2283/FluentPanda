@@ -1618,7 +1618,7 @@ function openLangs(){
 function langsFilter(v){const q=(v||'').trim().toLowerCase();document.querySelectorAll('#lgGrid .lgitem').forEach(b=>{b.style.display=!q||b.dataset.n.includes(q)?'':'none';});}
 function switchLang(l){
   if(!LANGS[l])return;
-  if(langLocked(l)){openPaywall();return;}
+  if(langLocked(l)){openPaywall(l);return;}
   if(S.lang===l){closeModal();return;}
   stopSpeech();S.lang=l;SES=null;STORY=null;save();closeModal();render();haptic('ok');
   toast((T('learning_now')+' ')+langName(l));
@@ -1657,6 +1657,7 @@ function defaultState(){
   };
 }
 function mergeState(p){const d=defaultState();if(p&&!p.uiLang)d.uiLang='ru';return Object.assign(d,p,{stats:Object.assign(d.stats,p.stats||{}),profile:Object.assign(d.profile,p.profile||{}),remind:Object.assign(d.remind,p.remind||{})});}
+const hadLocalAtLaunch=(()=>{try{return !!localStorage.getItem(KEY);}catch(e){return false;}})();
 let S=load();
 // Сохранённые данные и параметры URL не подтверждают оплаченный доступ.
 S.premium=false;
@@ -2112,17 +2113,20 @@ function renderSettings(){
     ('<button class="btn bad sm" onclick="App.resetAll()">'+T('reset')+'</button>')+
     ('<div class="note">'+T('stored_device'))+(TG?(' '+T('synced_cloud')):'')+(T('pay_note')+'</div>');
 }
-function setLang(l){if(!LANGS[l])return;if(langLocked(l)){openPaywall();return;}const ch=S.lang!==l;stopSpeech();SES=null;STORY=null;S.lang=l;save();header();renderSettings();haptic('light');toast((T('lang_colon')+' ')+langName(l));if(ch&&l==='ru'&&uiL()==='ru')openRuLevel();}
+function setLang(l){if(!LANGS[l])return;if(langLocked(l)){openPaywall(l);return;}const ch=S.lang!==l;stopSpeech();SES=null;STORY=null;S.lang=l;save();header();renderSettings();haptic('light');toast((T('lang_colon')+' ')+langName(l));if(ch&&l==='ru'&&uiL()==='ru')openRuLevel();}
 function setLevel(v){S.level=v;save();header();toast((T('level')+' ')+v);}
 function setGoal(v){S.dailyGoal=Number(v);save();const g=document.getElementById('goalVal');if(g)g.textContent=v;}
-function openPaywall(){
+let currentPaywallLang=null;
+function openPaywall(lang){
+  currentPaywallLang=typeof lang==='string'&&premiumLang(lang)?lang:null;
+  const langNotice=currentPaywallLang?'<div class="note">'+esc(apiMessage('«'+langName(currentPaywallLang)+'» доступен только с Premium. Текущий язык не изменён.','“'+langName(currentPaywallLang)+'” requires Premium. Your current language has not changed.'))+'</div>':'';
   const perks=[T('pw_1'),T('pw_2'),T('pw_3'),T('pw_4')].map(p=>'<div class="pwRow"><span style="color:var(--good)">'+IC.check+'</span><span>'+esc(p.replace(/^— /,''))+'</span></div>').join('');
   modal(('<div id="premiumPanel"><div class="pwHero"><span class="pwStar">'+IC.star+'</span><b>Fluent Panda Premium</b><span class="muted small">'+T('pw_title')+'</span></div>'+
     '<div class="card" style="margin-bottom:14px"><div class="row"><span class="big" style="font-size:30px;color:var(--warn)">150</span><span class="muted">'+T('stars_month')+'</span><span class="pill warn" style="margin-left:auto">'+T('pw_days')+'</span></div><div class="pwList">'+perks+'</div></div>'+
     (S.premium?('<div class="note">'+T('prem_active')+' · '+T('coins_x2')+'</div>'):
       ('<button class="btn" onclick="App.buyPremium()">'+IC.star+' '+T('pay_stars')+'</button>'+
        '<div class="field" style="margin-top:12px"><label>'+T('promo_q')+'</label><div class="row" style="gap:8px"><input id="pwPromo" placeholder="PANDA-XXXXXX" maxlength="16" style="flex:1;text-transform:uppercase"><button class="btn sec sm" style="width:auto;padding:0 14px" onclick="App.sendPromo()">'+T('promo_apply')+'</button></div></div>'))+
-    '<div class="note">'+esc(premiumStatusText())+'</div><button class="btn sec sm" style="margin-top:8px" onclick="App.retryPremium()">'+esc(apiMessage('Проверить статус снова','Check status again'))+'</button>'+
+    langNotice+'<div class="note">'+esc(premiumStatusText())+'</div><button class="btn sec sm" style="margin-top:8px" onclick="App.retryPremium()">'+esc(apiMessage('Проверить статус снова','Check status again'))+'</button>'+
     '<div class="note">'+esc(apiMessage('Если оплата в приложении недоступна, используй /buy в боте. Для доступа в приложении сервер должен быть подключён.','If in-app payment is unavailable, use /buy in the bot. App access requires a connected server.'))+'</div></div>'));
   haptic('light');
 }
@@ -2158,10 +2162,10 @@ async function refreshPremium(){
   }catch(e){if(seq!==premiumSeq)return S.premium;S.premium=false;premiumUntil=null;premiumStatus='unavailable';renderAfterPremiumCheck();return false;}
 }
 async function retryPremium(){
-  const pending=refreshPremium();
-  if(document.getElementById('premiumPanel'))openPaywall();
+  const lang=currentPaywallLang,pending=refreshPremium();
+  if(document.getElementById('premiumPanel'))openPaywall(lang);
   await pending;
-  if(document.getElementById('premiumPanel'))openPaywall();
+  if(document.getElementById('premiumPanel'))openPaywall(lang);
 }
 async function buyPremium(){
   try{
@@ -2201,7 +2205,7 @@ function onboarding(){
     ('<div class="field"><label>'+T('per_day_label')+' <b id="obGoalVal">10</b></label><input type="range" id="obGoal" min="5" max="40" step="5" value="10" oninput="document.getElementById(\'obGoalVal\').textContent=this.value" style="padding:0;border:0;background:none;min-height:44px"></div>')+
     ('<button class="btn" onclick="App.obDone()">'+T('start_course')+' ')+IC.right+'</button>');
 }
-function obLang(l){if(!LANGS[l])return;if(langLocked(l)){toast(uiL()==='ru'?'Этот язык доступен в Premium. Сначала выбери бесплатный язык.':'This language requires Premium. Choose a free language first.');return;}S.lang=l;document.querySelectorAll('#obLangs .langopt').forEach(b=>b.classList.toggle('on',b.dataset.l===l));haptic('light');}
+function obLang(l){if(!LANGS[l])return;if(langLocked(l)){toast(premiumStatus==='verified'?apiMessage('Этот язык доступен только с Premium. Текущий язык не изменён.','This language requires Premium. Your current language has not changed.'):premiumStatusText());return;}S.lang=l;document.querySelectorAll('#obLangs .langopt').forEach(b=>b.classList.toggle('on',b.dataset.l===l));haptic('light');}
 function obDone(){S.dailyGoal=Number(document.getElementById('obGoal').value);const n=document.getElementById('obName');if(n&&n.value.trim())S.profile.name=n.value.trim().slice(0,24);S.profile.nameManual=!(S.profile.tg&&S.profile.name===S.profile.tg.name.slice(0,24));S.onboarded=true;pushLog('cap',(T('log_course_started')+' ')+langName(S.lang));save();closeModal();render();toast(T('ob_go'));if(S.lang==='ru'&&uiL()==='ru')openRuLevel();}
 
 /* ============================ Public API ============================ */
@@ -2218,7 +2222,28 @@ window.App={setUiLang,setRuLevel,openRuLevel,
 };
 
 /* ============================ Boot ============================ */
-function syncCloud(){if(!(TG&&TG.CloudStorage))return;try{TG.CloudStorage.getItem(KEY,(err,val)=>{if(!err&&val){try{const p=JSON.parse(val);const local=localStorage.getItem(KEY);if(!local||(p.stats&&p.stats.xp>=(S.stats.xp||0))){const premium=S.premium;S=mergeState(p);S.premium=premium;localStorage.setItem(KEY,JSON.stringify(S));if(S.onboarded&&document.getElementById('obName'))closeModal();render();}}catch(e){}}});}catch(e){}}
+function syncCloud(){
+  if(!(TG&&TG.CloudStorage))return;
+  try{
+    const localSnapshot=()=>{const raw=localStorage.getItem(KEY);if(!raw)return raw;try{const state=JSON.parse(raw);delete state.premium;return JSON.stringify(state);}catch(e){return raw;}};
+    const requestedLocal=localSnapshot();
+    TG.CloudStorage.getItem(KEY,(err,val)=>{
+      if(err||!val)return;
+      try{
+        // Не перезаписываем действия пользователя, сделанные пока CloudStorage отвечал.
+        if(localSnapshot()!==requestedLocal)return;
+        const p=JSON.parse(val),remoteXp=Number(p.stats&&p.stats.xp)||0,localXp=Number(S.stats.xp)||0;
+        if(!hadLocalAtLaunch||remoteXp>localXp){
+          const premium=S.premium,localLang=S.lang;S=mergeState(p);S.premium=premium;
+          // Прогресс можно восстановить из облака, но локально выбранный язык не сбрасываем.
+          if(hadLocalAtLaunch&&LANGS[localLang])S.lang=localLang;
+          localStorage.setItem(KEY,JSON.stringify(S));
+          if(S.onboarded&&document.getElementById('obName'))closeModal();render();
+        }
+      }catch(e){}
+    });
+  }catch(e){}
+}
 (function boot(){
   if(!localStorage.getItem(KEY)){
     const light=(TG&&TG.colorScheme==='light')||(!TG&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches);
