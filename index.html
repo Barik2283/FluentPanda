@@ -379,15 +379,15 @@ function initTG(){
   try{ if(TG){ TG.ready(); TG.expand(); if(TG.disableVerticalSwipes) TG.disableVerticalSwipes(); } }catch(e){}
 }
 function loadTG(){
-  if(location.protocol==='file:') return;
+  if(location.protocol==='file:'){premiumStatus='unavailable';render();return;}
   const s=document.createElement('script');
   s.src='https://telegram.org/js/telegram-web-app.js';
   s.onload=function(){ initTG(); if(TG){
     applyTgProfile();
     if(!S.themeManual&&TG.colorScheme){S.theme=TG.colorScheme==='light'?'light':'dark';}
     try{TG.onEvent('themeChanged',function(){if(!S.themeManual){S.theme=TG.colorScheme==='light'?'light':'dark';applyThemeVars();}});}catch(e){}
-    render(); syncCloud(); refreshPremium(); } };
-  s.onerror=function(){};
+    render(); syncCloud(); refreshPremium(); }else{premiumStatus='unavailable';render();} };
+  s.onerror=function(){premiumStatus='unavailable';render();};
   document.head.appendChild(s);
 }
 function haptic(kind){ try{ if(TG && TG.HapticFeedback){ if(kind==='ok') TG.HapticFeedback.notificationOccurred('success'); else if(kind==='err') TG.HapticFeedback.notificationOccurred('error'); else TG.HapticFeedback.impactOccurred('light'); } }catch(e){} }
@@ -948,6 +948,21 @@ const WXE={};
 const ZH_SPEAK_HANZI=false;
 /* Строка: [суффикс, слово, ru, en, ipa (zh: иероглифы), эмодзи, подсказка_ru, подсказка_en, пример, пример_ru, пример_en, пример_иероглифы] */
 function addLangX(l,rows){WORDS[l]=WORDS[l]||[];rows.forEach(r=>{const id=l+"_"+r[0],w=W(id,r[1],r[2],"basics");w.en=r[3];if(l==="ru")w.track="basic";if(l==="zh")w.hz=r[4];WORDS[l].push(w);WX[id]=[r[4],r[5],r[6],r[8],r[9]];WXE[id]={use:r[7],exTr:r[10],exHz:r[11]||""};});}
+
+// Начальные курсы: слово, перевод RU/EN и произношение.
+Object.assign(LANGS,{ja:{name:'Японский',nameEn:'Japanese',code:'JA',tts:'ja-JP'},ko:{name:'Корейский',nameEn:'Korean',code:'KO',tts:'ko-KR'}});
+Object.assign(FLAGS,{ja:'🇯🇵',ko:'🇰🇷'});Object.assign(LANG_EN,{ja:'Japanese',ko:'Korean'});
+LANGS.ja.flag=FLAGS.ja;LANGS.ko.flag=FLAGS.ko;
+const BASIC_NEW={
+ ja:[['こんにちは','привет','hello','konnichiwa','🙋'],['さようなら','до свидания','goodbye','sayōnara','👋'],['ありがとう','спасибо','thank you','arigatō','😊'],['お願いします','пожалуйста','please','onegaishimasu','🙏'],['はい','да','yes','hai','✅'],['いいえ','нет','no','iie','❌'],['水','вода','water','mizu','💧'],['友達','друг','friend','tomodachi','🤝'],['家','дом','house','ie','🏠'],['本','книга','book','hon','📖'],['時間','время','time','jikan','⏰'],['今日','сегодня','today','kyō','☀️'],['夜','ночь','night','yoru','🌙'],['名前','имя','name','namae','🏷️'],['町','город','town','machi','🏙️'],['お金','деньги','money','okane','💵'],['仕事','работа','work','shigoto','💼'],['愛','любовь','love','ai','❤️'],['人生','жизнь','life','jinsei','🌱'],['道','дорога','road','michi','🛣️']],
+ ko:[['안녕하세요','здравствуйте','hello','annyeonghaseyo','🙋'],['안녕히 가세요','до свидания','goodbye','annyeonghi gaseyo','👋'],['감사합니다','спасибо','thank you','gamsahamnida','😊'],['주세요','пожалуйста','please','juseyo','🙏'],['네','да','yes','ne','✅'],['아니요','нет','no','aniyo','❌'],['물','вода','water','mul','💧'],['친구','друг','friend','chingu','🤝'],['집','дом','house','jip','🏠'],['책','книга','book','chaek','📖'],['시간','время','time','sigan','⏰'],['오늘','сегодня','today','oneul','☀️'],['밤','ночь','night','bam','🌙'],['이름','имя','name','ireum','🏷️'],['도시','город','city','dosi','🏙️'],['돈','деньги','money','don','💵'],['일','работа','work','il','💼'],['사랑','любовь','love','sarang','❤️'],['인생','жизнь','life','insaeng','🌱'],['길','дорога','road','gil','🛣️']]
+};
+for(const l of ['ja','ko'])addLangX(l,BASIC_NEW[l].map((r,i)=>['b'+(i+1),r[0],r[1],r[2],r[3],r[4],'','','','','']));
+const PREMIUM_LANGS=new Set(['tr','pl','he','ja','ko']);
+function premiumLang(l){return PREMIUM_LANGS.has(l);}
+function langLocked(l){return premiumLang(l)&&!S.premium;}
+function premiumLabel(l){return premiumLang(l)?' <span class="pill warn">Premium</span>':'';}
+
 addLangX("uk",[["b1","привіт","привет","hi","prɪˈʋʲit","🙋","Неформальное приветствие; официально — «добрий день».","Informal hi; formally: добрий день.","Привіт! Як справи?","Привет! Как дела?","Hi! How are you?"],["b2","до побачення","до свидания","goodbye","do poˈbatʃenʲːa","👋","Вежливое прощание; с друзьями — «бувай».","Polite goodbye; with friends: бувай.","До побачення, до завтра!","До свидания, до завтра!","Goodbye, see you tomorrow!"],["b3","дякую","спасибо","thank you","ˈdʲakuju","😊","От «дякувати»; «щиро дякую» — «искренне благодарю».","From дякувати; щиро дякую = thank you sincerely.","Дякую за допомогу!","Спасибо за помощь!","Thanks for the help!"],["b4","будь ласка","пожалуйста","please","budʲ ˈlaska","🙏","И просьба, и ответ на «дякую».","Both 'please' and 'you're welcome'.","Каву, будь ласка.","Кофе, пожалуйста.","A coffee, please."],["b5","так","да","yes","tak","✅","Не путай: «так» по-украински — «да».","Means 'yes' (Russian так = 'so').","Так, звичайно.","Да, конечно.","Yes, of course."],["b6","ні","нет","no","nʲi","❌","«Нет»; перед глаголом — «не».","'No'; before a verb use не.","Ні, дякую.","Нет, спасибо.","No, thank you."],["b7","вода","вода","water","woˈda","💧","Безударная «о» звучит чётко, без аканья.","Unstressed о stays [o] in Ukrainian.","Склянку води, будь ласка.","Стакан воды, пожалуйста.","A glass of water, please."],["b8","друг","друг","friend","druɦ","🤝","«Г» мягкая, как [ɦ]; подруга — «подруга».","Г is a soft [ɦ]; female friend: подруга.","Він мій друг.","Он мой друг.","He is my friend."],["b9","дім","дом","house","dʲim","🏠","«Вдома» — «дома»; здание — «будинок».","Вдома = at home; a building is будинок.","Я вдома.","Я дома.","I'm at home."],["b10","книжка","книга","book","ˈknɪʒka","📖","Есть и «книга» — более книжный вариант.","Also книга (more formal).","Я читаю цікаву книжку.","Я читаю интересную книгу.","I'm reading an interesting book."],["b11","час","время","time","tʃas","⏰","Ложный друг: «час» — это «время», а час — «година».","False friend: час = time; an hour is година.","У мене немає часу.","У меня нет времени.","I have no time."],["b12","день","день","day","denʲ","☀️","«Добрий день» — «добрый день».","Добрий день = good afternoon.","Гарного дня!","Хорошего дня!","Have a nice day!"],["b13","ніч","ночь","night","nʲitʃ","🌙","«На добраніч» — «спокойной ночи».","На добраніч = good night.","На добраніч!","Спокойной ночи!","Good night!"],["b14","ім’я","имя","name","imˈja","🏷️","Апостроф отделяет «м» от «я»: [м-йа].","The apostrophe separates м and я.","Моє ім’я — Олена.","Меня зовут Олена.","My name is Olena."],["b15","місто","город","city","ˈmʲisto","🏙️","Ложный друг: «місто» — город, а место — «місце».","False friend: місто = city; a place is місце.","Київ — велике місто.","Киев — большой город.","Kyiv is a big city."],["b16","гроші","деньги","money","ˈɦrɔʃi","💵","Только во множественном числе, как «деньги».","Plural only.","У мене немає грошей.","У меня нет денег.","I have no money."],["b17","робота","работа","work","roˈbɔta","💼","Глагол — «працювати» (работать).","Verb: працювати (to work).","Я йду на роботу.","Я иду на работу.","I'm going to work."],["b18","кохання","любовь","love","koˈxanʲːa","❤️","Романтическая любовь; любовь к маме — «любов».","Romantic love; love in general is любов.","Це кохання з першого погляду.","Это любовь с первого взгляда.","It's love at first sight."],["b19","життя","жизнь","life","ʒɪˈtʲːa","🌱","Двойная «тт» звучит долго.","Double тт is a long sound.","Життя прекрасне!","Жизнь прекрасна!","Life is beautiful!"],["b20","вулиця","улица","street","ˈʋulɪtsʲa","🛣️","Перед «у» в начале слова появляется «в».","Starts with в before у.","Я живу на цій вулиці.","Я живу на этой улице.","I live on this street."]]);
 addLangX("sr",[["b1","здраво","привет","hi","ˈzdraʋo","🙋","Неформальное «привет»; латиницей — zdravo. Ещё говорят «ћао».","Informal hi (Latin: zdravo); also ћао (ćao).","Здраво! Како си?","Привет! Как дела?","Hi! How are you?"],["b2","довиђења","до свидания","goodbye","doʋiˈdʑeɲa","👋","Латиницей — doviđenja; «ђ» — мягкий звук [дь].","Latin: doviđenja; ђ is a soft [dj].","Довиђења, видимо се сутра!","До свидания, увидимся завтра!","Goodbye, see you tomorrow!"],["b3","хвала","спасибо","thank you","ˈxʋala","😊","Латиницей — hvala; «хвала лепо» — «большое спасибо».","Latin: hvala; хвала лепо = thanks a lot.","Хвала на помоћи!","Спасибо за помощь!","Thanks for the help!"],["b4","молим","пожалуйста","please","ˈmolim","🙏","И просьба, и ответ на «хвала». Латиницей — molim.","Both 'please' and 'you're welcome'. Latin: molim.","Кафу, молим.","Кофе, пожалуйста.","A coffee, please."],["b5","да","да","yes","da","✅","Как в русском. Латиницей — da.","Same as in Russian. Latin: da.","Да, наравно.","Да, конечно.","Yes, of course."],["b6","не","нет","no","nɛ","❌","И «нет», и «не» перед глаголом.","Both 'no' and 'not'.","Не, хвала.","Нет, спасибо.","No, thank you."],["b7","вода","вода","water","ˈʋoda","💧","Латиницей — voda; газированная — «кисела вода».","Latin: voda; sparkling water: кисела вода.","Чашу воде, молим.","Стакан воды, пожалуйста.","A glass of water, please."],["b8","пријатељ","друг","friend","ˈprijatɛʎ","🤝","Латиницей — prijatelj; «љ» — мягкое [ль].","Latin: prijatelj; љ is a soft [ly].","Он је мој пријатељ.","Он мой друг.","He is my friend."],["b9","кућа","дом","house","ˈkutɕa","🏠","Латиницей — kuća; «код куће» — «дома».","Latin: kuća; код куће = at home.","Ја сам код куће.","Я дома.","I'm at home."],["b10","књига","книга","book","ˈkɲiɡa","📖","Латиницей — knjiga; «њ» — мягкое [нь].","Latin: knjiga; њ is a soft [ny].","Читам занимљиву књигу.","Я читаю интересную книгу.","I'm reading an interesting book."],["b11","време","время","time","ˈʋrɛːmɛ","⏰","И «время», и «погода». Латиницей — vreme.","Both 'time' and 'weather'. Latin: vreme.","Немам времена.","У меня нет времени.","I have no time."],["b12","дан","день","day","daːn","☀️","«Добар дан» — «добрый день». Латиницей — dan.","Добар дан = good afternoon. Latin: dan.","Добар дан!","Добрый день!","Good afternoon!"],["b13","ноћ","ночь","night","noːtɕ","🌙","«Лаку ноћ» — «спокойной ночи». Латиницей — noć.","Лаку ноћ = good night. Latin: noć.","Лаку ноћ!","Спокойной ночи!","Good night!"],["b14","име","имя","name","ˈimɛ","🏷️","Средний род. Латиницей — ime.","Neuter noun. Latin: ime.","Моје име је Марко.","Меня зовут Марко.","My name is Marko."],["b15","град","город","city","ɡraːd","🏙️","Ложный друг: не град с неба, а «город». Латиницей — grad.","False friend: град = city (not hail). Latin: grad.","Београд је велики град.","Белград — большой город.","Belgrade is a big city."],["b16","новац","деньги","money","ˈnoʋats","💵","Единственное число. Латиницей — novac.","Singular noun. Latin: novac.","Немам новца.","У меня нет денег.","I have no money."],["b17","посао","работа","work","ˈposao","💼","«Идем на посао» — «иду на работу». Латиницей — posao.","Идем на посао = I'm going to work. Latin: posao.","Идем на посао.","Я иду на работу.","I'm going to work."],["b18","љубав","любовь","love","ˈʎubaʋ","❤️","Латиницей — ljubav; женский род.","Latin: ljubav; feminine.","То је љубав на први поглед.","Это любовь с первого взгляда.","It's love at first sight."],["b19","живот","жизнь","life","ˈʒiʋot","🌱","Ложный друг: «живот» — это «жизнь». Латиницей — život.","False friend: живот = life (not belly). Latin: život.","Живот је леп!","Жизнь прекрасна!","Life is beautiful!"],["b20","улица","улица","street","ˈulitsa","🛣️","Как в русском. Латиницей — ulica.","Same as in Russian. Latin: ulica.","Живим у овој улици.","Я живу на этой улице.","I live on this street."]]);
 addLangX("zh",[["b1","nǐ hǎo","привет","hello","你好","🙋","Универсальное приветствие; вежливо — nín hǎo 您好.","Universal hello; polite: nín hǎo 您好.","Nǐ hǎo! Nǐ hǎo ma?","Привет! Как дела?","Hello! How are you?","你好！你好吗？"],["b2","zàijiàn","до свидания","goodbye","再见","👋","Буквально «снова увидимся».","Literally 'see you again'.","Zàijiàn, míngtiān jiàn!","До свидания, до завтра!","Goodbye, see you tomorrow!","再见，明天见！"],["b3","xièxie","спасибо","thank you","谢谢","😊","Второй слог без тона; ответ — bú kèqi 不客气.","Second syllable is toneless; reply: bú kèqi 不客气.","Xièxie nǐ!","Спасибо тебе!","Thank you!","谢谢你！"],["b4","qǐng","пожалуйста","please","请","🙏","Ставится в начало просьбы: qǐng zuò — «садитесь, пожалуйста».","Goes first: qǐng zuò = please sit down.","Qǐng hē chá.","Пейте чай, пожалуйста.","Please have some tea.","请喝茶。"],["b5","shì","да","yes","是","✅","Буквально «являться»; «да» часто — повтор глагола.","Literally 'to be'; 'yes' is often the repeated verb.","Shì, wǒ shì xuésheng.","Да, я студент.","Yes, I'm a student.","是，我是学生。"],["b6","bù","нет","no","不","❌","Перед 4-м тоном читается bú: bú shì.","Becomes bú before a 4th tone: bú shì.","Bù, xièxie.","Нет, спасибо.","No, thank you.","不，谢谢。"],["b7","shuǐ","вода","water","水","💧","Иероглиф похож на струи воды.","The character looks like flowing water.","Wǒ yào yì bēi shuǐ.","Мне стакан воды.","I'd like a glass of water.","我要一杯水。"],["b8","péngyou","друг","friend","朋友","🤝","Второй слог без тона.","Second syllable is toneless.","Tā shì wǒ de péngyou.","Он мой друг.","He is my friend.","他是我的朋友。"],["b9","jiā","дом","home","家","🏠","И «дом», и «семья».","Both 'home' and 'family'.","Wǒ zài jiā.","Я дома.","I'm at home.","我在家。"],["b10","shū","книга","book","书","📖","Счётное слово: yì běn shū — «одна книга».","Measure word: yì běn shū = one book.","Wǒ zài kàn shū.","Я читаю книгу.","I'm reading a book.","我在看书。"],["b11","shíjiān","время","time","时间","⏰","Время вообще; «который час?» — jǐ diǎn?","Time in general; 'what time?' = jǐ diǎn?","Wǒ méiyǒu shíjiān.","У меня нет времени.","I have no time.","我没有时间。"],["b12","tiān","день","day","天","☀️","И «день», и «небо»; jīntiān — «сегодня».","Also 'sky'; jīntiān = today.","Jīntiān tiānqì hěn hǎo.","Сегодня отличная погода.","The weather is great today.","今天天气很好。"],["b13","wǎnshang","вечер","evening","晚上","🌙","«Добрый вечер» — wǎnshang hǎo; «спокойной ночи» — wǎn’ān.","Good evening = wǎnshang hǎo; good night = wǎn’ān.","Wǎnshang hǎo!","Добрый вечер!","Good evening!","晚上好！"],["b14","míngzi","имя","name","名字","🏷️","Второй слог без тона.","Second syllable is toneless.","Nǐ jiào shénme míngzi?","Как тебя зовут?","What's your name?","你叫什么名字？"],["b15","chéngshì","город","city","城市","🏙️","Город вообще; Пекин — Běijīng.","City in general; Beijing = Běijīng.","Běijīng shì dà chéngshì.","Пекин — большой город.","Beijing is a big city.","北京是大城市。"],["b16","qián","деньги","money","钱","💵","«Сколько стоит?» — duōshao qián?","How much? = duōshao qián?","Zhège duōshao qián?","Сколько это стоит?","How much is this?","这个多少钱？"],["b17","gōngzuò","работа","work","工作","💼","И «работа», и «работать».","Both noun and verb.","Wǒ qù gōngzuò.","Я иду на работу.","I'm going to work.","我去工作。"],["b18","ài","любовь","love","爱","❤️","Wǒ ài nǐ — «я тебя люблю».","Wǒ ài nǐ = I love you.","Wǒ ài nǐ.","Я тебя люблю.","I love you.","我爱你。"],["b19","shēnghuó","жизнь","life","生活","🌱","Повседневная жизнь, быт.","Everyday life.","Shēnghuó hěn měihǎo.","Жизнь прекрасна.","Life is beautiful.","生活很美好。"],["b20","chá","чай","tea","茶","🍵","Зелёный чай — lǜchá 绿茶.","Green tea = lǜchá 绿茶.","Wǒ xǐhuan hē chá.","Я люблю пить чай.","I like drinking tea.","我喜欢喝茶。"]]);
@@ -1233,8 +1248,8 @@ const UI_STRINGS={
     profile_sub:"Имя и аватар видны в шапке",
     pw_1:"— сложные истории на всех языках",
     pw_2:"— монетки x2 за уроки, истории и повторения",
-    pw_3:"— синхронизация прогресса между устройствами",
-    pw_4:"— второе слово дня в боте",
+    pw_3:"— дополнительные языковые курсы",
+    pw_4:"— турецкий, польский, иврит, японский и корейский + второе слово дня в боте",
     pw_days:"30 дней",
     pw_note:"Оплата Telegram Stars откроется прямо здесь, в приложении. После оплаты сервер проверит статус, а бот пришлёт подтверждение. Промокод даёт дни бесплатно: поле ниже или /promo в боте.",
     pw_sub:"Подписка Fluent Panda Premium",
@@ -1475,8 +1490,8 @@ const UI_STRINGS={
     profile_sub:"Your name and avatar are shown in the header",
     pw_1:"— hard stories in every language",
     pw_2:"— coins x2 for lessons, stories and reviews",
-    pw_3:"— progress sync across devices",
-    pw_4:"— a second word of the day in the bot",
+    pw_3:"— additional language courses",
+    pw_4:"— Turkish, Polish, Hebrew, Japanese and Korean + a second word of the day in the bot",
     pw_days:"30 days",
     pw_note:"Telegram Stars checkout opens right here in the app. After paying, Premium turns on by itself and the bot sends a confirmation. Promo codes grant free days: field below or /promo in the bot.",
     pw_sub:"Fluent Panda Premium subscription",
@@ -1585,13 +1600,14 @@ const UI_STRINGS={
 function flagHtml(l,size){const L=LANGS[l]||{};return '<span class="flag" style="--s:'+(size||22)+'px"><img src="'+emojiUrl(L.flag||'')+'" alt="" data-l="'+esc(l)+'" onerror="flagErr(this)"><i>'+(L.code||'')+'</i></span>';}
 function openLangs(){
   const items=Object.keys(LANGS).map(l=>{const tot=words(l).length,ln=learnedCount(l),pc=Math.round(ln*100/Math.max(tot,1));
-    return '<button class="lgitem'+(S.lang===l?' on':'')+'" data-n="'+esc(langName(l).toLowerCase())+'" onclick="App.switchLang(\''+l+'\')">'+flagHtml(l,38)+'<b>'+esc(langName(l))+'</b><span class="muted small">'+ln+' / '+tot+' '+pl(tot,'word')+'</span><span class="lgbar"><i style="width:'+pc+'%"></i></span></button>';}).join('');
+    return '<button class="lgitem'+(S.lang===l?' on':'')+'" data-n="'+esc(langName(l).toLowerCase())+'" onclick="App.switchLang(\''+l+'\')">'+flagHtml(l,38)+'<b>'+esc(langName(l))+'</b>'+premiumLabel(l)+'<span class="muted small">'+ln+' / '+tot+' '+pl(tot,'word')+'</span><span class="lgbar"><i style="width:'+pc+'%"></i></span></button>';}).join('');
   modal(('<h3>'+T('langs_title')+'</h3><div class="muted small" style="margin-bottom:10px">'+T('langs_sub')+'</div><input id="lgSearch" placeholder="'+T('langs_search')+'" oninput="App.langsFilter(this.value)" style="margin-bottom:12px"><div class="lggrid" id="lgGrid">')+items+'</div>');
   haptic('light');
 }
 function langsFilter(v){const q=(v||'').trim().toLowerCase();document.querySelectorAll('#lgGrid .lgitem').forEach(b=>{b.style.display=!q||b.dataset.n.includes(q)?'':'none';});}
 function switchLang(l){
   if(!LANGS[l])return;
+  if(langLocked(l)){openPaywall();return;}
   if(S.lang===l){closeModal();return;}
   stopSpeech();S.lang=l;SES=null;STORY=null;save();closeModal();render();haptic('ok');
   toast((T('learning_now')+' ')+langName(l));
@@ -1633,6 +1649,7 @@ function mergeState(p){const d=defaultState();if(p&&!p.uiLang)d.uiLang='ru';retu
 let S=load();
 // Сохранённые данные и параметры URL не подтверждают оплаченный доступ.
 S.premium=false;
+let premiumStatus='checking',premiumUntil=null,premiumSeq=0;
 function load(){try{const raw=localStorage.getItem(KEY);if(raw)return mergeState(JSON.parse(raw));}catch(e){}return defaultState();}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}scheduleCloudSave();}
 let cloudTimer=0;
@@ -1736,7 +1753,7 @@ document.addEventListener('pointerdown',unlockAudio,{once:true,capture:true});
 function findWord(id){const l=String(id).split('_')[0];return (WORDS[l]||[]).find(x=>x.id===id)||null;}
 function sayWord(id,slow){const w=findWord(id);if(w)say(speechText(w),{lang:id.split('_')[0],file:id,slow:!!slow});}
 function speakExample(id){const w=findWord(id);if(!w)return;const d=wx(w);if(d.ex)say(d.ex,{lang:id.split('_')[0],file:id+'_ex'});}
-function openWord(id){
+function openWord(id){if(langLocked(S.lang)){openPaywall();return;}
   const w=findWord(id);if(!w)return;
   modal('<div class="center"'+wdir(wLang(w))+' style="padding-top:6px">'+wordPic(w,112)+'<div style="font-size:30px;font-weight:800">'+esc(w.w)+'</div>'+ipaHtml(w)+'<div style="color:var(--acc);font-weight:700;font-size:19px;margin-top:8px">'+esc(gloss(w))+'</div>'+
     '<div class="row" style="justify-content:center;gap:8px;margin-top:14px"><button class="btn sec sm" style="width:auto;padding:0 16px" onclick="App.sayWord(\''+id+'\')">'+IC.sound+(' '+T('listen')+'</button><button class="btn sec sm" style="width:auto;padding:0 16px" onclick="App.sayWord(\'')+id+('\',true)">'+T('slowly')+'</button></div></div>')+usageHtml(w));
@@ -1778,6 +1795,9 @@ function setTheme(t){S.theme=t;S.themeManual=true;save();applyThemeVars();header
 function toggleTheme(){setTheme(S.theme==='dark'?'light':'dark');}
 function toggleSound(){S.sound=!S.sound;save();header();if(TAB==='settings')renderSettings();toast(S.sound?T('sound_on'):T('sound_off'));haptic('light');}
 function render(){rolloverDay();applyThemeVars();applyUiStatic();header();setNav();
+  if(langLocked(S.lang)&&['course','words','stories'].includes(TAB)){
+    SES=null;STORY=null;main.innerHTML='<div class="card center"><h3>⭐ Premium</h3><p>'+esc(uiL()==='ru'?'Этот язык доступен с Premium. Прогресс сохранён.':'This language requires Premium. Your progress is saved.')+'</p><p class="muted small">'+esc(premiumStatusText())+'</p><button class="btn" onclick="App.openPaywall()">'+esc(T('open_premium'))+'</button><button class="btn sec" style="margin-top:10px" onclick="App.openLangs()">'+esc(T('langs_title'))+'</button></div>';main.scrollTop=0;return;
+  }
   if(TAB==='profile')renderProfile();else if(TAB==='course')renderCourse();else if(TAB==='words')renderWords();else if(TAB==='stories')renderStories();else if(TAB==='settings')renderSettings();
   main.scrollTop=0;}
 
@@ -1805,6 +1825,7 @@ function renderCourse(){
   main.innerHTML=html;
 }
 function openLesson(id){
+  if(langLocked(S.lang)){openPaywall();return;}
   const ls=lessonsFor(S.lang),idx=ls.findIndex(l=>l.id===id);
   if(idx<0)return;
   const st=lessonState(S.lang);
@@ -1824,6 +1845,7 @@ function startLesson(l){
   closeModal();renderQuestion();
 }
 function startReview(){
+  if(langLocked(S.lang)){openPaywall();return;}
   let pool=dueWords();if(pool.length<5)pool=words();
   const q=shuffle(pool).slice(0,Math.min(Math.max(S.dailyGoal,5),15)).map(w=>({w,type:MODE==='cards'?'card':MODE}));
   SES={kind:'review',q,i:0,correct:0,answered:0,flipped:false};
@@ -1943,7 +1965,7 @@ function renderStories(){
   main.innerHTML=html;
 }
 function storyFilter(f){SF=f;renderStories();haptic('light');}
-function openStory(id){
+function openStory(id){if(langLocked(S.lang)){openPaywall();return;}
   const s=STORIES[S.lang].find(x=>x.id===id);if(!s)return;
   if(s.diff==='hard'&&!S.premium)return openPaywall();
   STORY={s,i:0,tr:false};renderStoryReader();
@@ -2058,7 +2080,7 @@ setInterval(function(){
 
 /* ============================ Settings tab ============================ */
 function renderSettings(){
-  const langs=Object.keys(LANGS).map(l=>'<button class="langopt '+(S.lang===l?'on':'')+'" onclick="App.setLang(\''+l+'\')">'+flagHtml(l,40)+'<span style="flex:1"><b>'+esc(langName(l))+'</b><div class="muted small">'+words(l).length+' '+pl(words(l).length,'word')+' · '+lessonsFor(l).length+' '+pl(lessonsFor(l).length,'lesson')+' · '+learnedCount(l)+(' '+T('learned_lc')+'</div></span>')+(S.lang===l?IC.check:'')+'</button>').join('');
+  const langs=Object.keys(LANGS).map(l=>'<button class="langopt '+(S.lang===l?'on':'')+'" onclick="App.setLang(\''+l+'\')">'+flagHtml(l,40)+'<span style="flex:1"><b>'+esc(langName(l))+'</b>'+premiumLabel(l)+'<div class="muted small">'+words(l).length+' '+pl(words(l).length,'word')+' · '+lessonsFor(l).length+' '+pl(lessonsFor(l).length,'lesson')+' · '+learnedCount(l)+(' '+T('learned_lc')+'</div></span>')+(S.lang===l?IC.check:'')+'</button>').join('');
   main.innerHTML=
     '<div class="h2">'+esc(T('ui_lang'))+'</div>'+uiLangRow()+('<div class="h2">'+T('appearance')+'</div>')+
     '<div class="srow"><span class="si">'+(S.theme==='dark'?IC.moon:IC.sun)+('</span><span class="stx"><b>'+T('theme')+'</b><span>'+T('theme_sub')+'</span></span><div class="seg" data-kind="theme" style="width:190px;flex:0 0 auto"><button data-th="light" class="')+(S.theme==='light'?'on':'')+('" onclick="App.setTheme(\'light\')">'+T('th_light')+'</button><button data-th="dark" class="')+(S.theme==='dark'?'on':'')+('" onclick="App.setTheme(\'dark\')">'+T('th_dark')+'</button></div></div>')+
@@ -2072,30 +2094,51 @@ function renderSettings(){
     ('<button class="btn bad sm" onclick="App.resetAll()">'+T('reset')+'</button>')+
     ('<div class="note">'+T('stored_device'))+(TG?(' '+T('synced_cloud')):'')+(T('pay_note')+'</div>');
 }
-function setLang(l){if(!LANGS[l])return;const ch=S.lang!==l;stopSpeech();SES=null;STORY=null;S.lang=l;save();header();renderSettings();haptic('light');toast((T('lang_colon')+' ')+langName(l));if(ch&&l==='ru'&&uiL()==='ru')openRuLevel();}
+function setLang(l){if(!LANGS[l])return;if(langLocked(l)){openPaywall();return;}const ch=S.lang!==l;stopSpeech();SES=null;STORY=null;S.lang=l;save();header();renderSettings();haptic('light');toast((T('lang_colon')+' ')+langName(l));if(ch&&l==='ru'&&uiL()==='ru')openRuLevel();}
 function setLevel(v){S.level=v;save();header();toast((T('level')+' ')+v);}
 function setGoal(v){S.dailyGoal=Number(v);save();const g=document.getElementById('goalVal');if(g)g.textContent=v;}
 function openPaywall(){
   const perks=[T('pw_1'),T('pw_2'),T('pw_3'),T('pw_4')].map(p=>'<div class="pwRow"><span style="color:var(--good)">'+IC.check+'</span><span>'+esc(p.replace(/^— /,''))+'</span></div>').join('');
-  modal(('<div class="pwHero"><span class="pwStar">'+IC.star+'</span><b>Fluent Panda Premium</b><span class="muted small">'+T('pw_title')+'</span></div>'+
-    '<div class="card" style="margin-bottom:14px"><div class="row"><span class="big" style="font-size:30px;color:var(--warn)">150</span><span class="muted">'+T('stars_month')+'<br>≈ 199 ₽</span><span class="pill warn" style="margin-left:auto">'+T('pw_days')+'</span></div><div class="pwList">'+perks+'</div></div>'+
+  modal(('<div id="premiumPanel"><div class="pwHero"><span class="pwStar">'+IC.star+'</span><b>Fluent Panda Premium</b><span class="muted small">'+T('pw_title')+'</span></div>'+
+    '<div class="card" style="margin-bottom:14px"><div class="row"><span class="big" style="font-size:30px;color:var(--warn)">150</span><span class="muted">'+T('stars_month')+'</span><span class="pill warn" style="margin-left:auto">'+T('pw_days')+'</span></div><div class="pwList">'+perks+'</div></div>'+
     (S.premium?('<div class="note">'+T('prem_active')+' · '+T('coins_x2')+'</div>'):
       ('<button class="btn" onclick="App.buyPremium()">'+IC.star+' '+T('pay_stars')+'</button>'+
        '<div class="field" style="margin-top:12px"><label>'+T('promo_q')+'</label><div class="row" style="gap:8px"><input id="pwPromo" placeholder="PANDA-XXXXXX" maxlength="16" style="flex:1;text-transform:uppercase"><button class="btn sec sm" style="width:auto;padding:0 14px" onclick="App.sendPromo()">'+T('promo_apply')+'</button></div></div>'))+
-    '<div class="note">'+T('pw_note')+'</div>'));
+    '<div class="note">'+esc(premiumStatusText())+'</div><button class="btn sec sm" style="margin-top:8px" onclick="App.retryPremium()">'+esc(apiMessage('Проверить статус снова','Check status again'))+'</button>'+
+    '<div class="note">'+esc(apiMessage('Если оплата в приложении недоступна, используй /buy в боте. Для доступа в приложении сервер должен быть подключён.','If in-app payment is unavailable, use /buy in the bot. App access requires a connected server.'))+'</div></div>'));
   haptic('light');
 }
 function apiMessage(ru,en){return uiL()==='ru'?ru:en;}
+function premiumStatusText(){
+  if(premiumStatus==='checking')return apiMessage('Проверяем Premium…','Checking Premium…');
+  if(premiumStatus==='unavailable')return apiMessage('Не удалось проверить Premium: сервер недоступен или приложение открыто вне Telegram.','Could not check Premium: the server is unavailable or the app is outside Telegram.');
+  if(S.premium)return apiMessage('Premium активен'+(premiumUntil?' до '+premiumUntil+' (не включая этот день).':'.'),'Premium active'+(premiumUntil?' until '+premiumUntil+' (exclusive).':'.'));
+  return apiMessage('Premium не активен.','Premium is not active.');
+}
 async function apiCall(path, extra){
   const base=String(window.FLUENTPANDA_API_URL||'').replace(/\/$/,'');
   if(!/^https:\/\//i.test(base)||!TG||!TG.initData)throw new Error('unavailable');
-  const res=await fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(Object.assign({initData:TG.initData},extra||{}))});
-  const data=await res.json();if(!res.ok)throw new Error(data.error||'request_failed');return data;
+  const controller=typeof AbortController!=='undefined'?new AbortController():null;
+  const timer=controller?setTimeout(()=>controller.abort(),10000):null;
+  try{
+    const res=await fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json'},signal:controller?controller.signal:undefined,
+      body:JSON.stringify(Object.assign({initData:TG.initData},extra||{}))});
+    const data=await res.json();if(!res.ok)throw new Error(data.error||'request_failed');return data;
+  }finally{if(timer)clearTimeout(timer);}
 }
 async function refreshPremium(){
-  try{const data=await apiCall('/api/session');S.premium=data.premium===true;save();render();return S.premium;}
-  catch(e){S.premium=false;render();return false;}
+  const seq=++premiumSeq;premiumStatus='checking';
+  try{
+    const data=await apiCall('/api/session');
+    if(seq!==premiumSeq)return S.premium;
+    S.premium=data.premium===true;premiumUntil=typeof data.until==='string'?data.until:null;premiumStatus='verified';save();render();return S.premium;
+  }catch(e){if(seq!==premiumSeq)return S.premium;S.premium=false;premiumUntil=null;premiumStatus='unavailable';render();return false;}
+}
+async function retryPremium(){
+  const pending=refreshPremium();
+  if(document.getElementById('premiumPanel'))openPaywall();
+  await pending;
+  if(document.getElementById('premiumPanel'))openPaywall();
 }
 async function buyPremium(){
   try{
@@ -2115,8 +2158,10 @@ async function buyPremium(){
 async function sendPromo(){
   const el=document.getElementById('pwPromo'),code=((el&&el.value)||'').trim();
   if(!code)return toast(T('promo_empty'));
-  try{await apiCall('/api/promo',{code});await refreshPremium();closeModal();render();toast(T('prem_active'));}
-  catch(e){toast(e.message==='spent'?apiMessage('Код уже использован.','Code already used.'):
+  try{await apiCall('/api/promo',{code});const active=await refreshPremium();closeModal();render();toast(active?T('prem_active'):apiMessage('Код принят, но проверить Premium не удалось. Открой приложение позже.','Code accepted, but Premium could not be verified. Reopen the app later.'));}
+  catch(e){toast(e.message==='expired'?apiMessage('Срок действия промокода истёк.','This promo code has expired.'):
+    e.message==='already_used'?apiMessage('Ты уже активировал этот промокод.','You have already used this code.'):
+    e.message==='spent'?apiMessage('Код уже использован.','Code already used.'):
     e.message==='unknown'?apiMessage('Промокод не найден.','Promo code not found.'):
     apiMessage('Не удалось активировать код. Проверь сервер или используй /promo в боте.','Could not activate code. Check the server or use /promo in the bot.'));}
 }
@@ -2126,14 +2171,14 @@ function doReset(){const keep={lang:S.lang,level:S.level,dailyGoal:S.dailyGoal,t
 /* ============================ Onboarding ============================ */
 function onboarding(){
   applyUiStatic();
-  const langs=Object.keys(LANGS).map(l=>{const nw=words(l).length,nl=lessonsFor(l).length;return '<button class="langopt '+(S.lang===l?'on':'')+'" data-l="'+l+'" onclick="App.obLang(\''+l+'\')">'+flagHtml(l,40)+'<span style="flex:1"><b>'+esc(langName(l))+'</b><div class="muted small">'+nw+' '+pl(nw,'word')+' · '+nl+' '+pl(nl,'lesson')+'</div></span></button>';}).join('');
+  const langs=Object.keys(LANGS).map(l=>{const nw=words(l).length,nl=lessonsFor(l).length;return '<button class="langopt '+(S.lang===l?'on':'')+'" data-l="'+l+'" onclick="App.obLang(\''+l+'\')">'+flagHtml(l,40)+'<span style="flex:1"><b>'+esc(langName(l))+'</b>'+premiumLabel(l)+'<div class="muted small">'+nw+' '+pl(nw,'word')+' · '+nl+' '+pl(nl,'lesson')+'</div></span></button>';}).join('');
   modal(MASCOT+uiLangBlock()+('<h3 class="center">'+T('ob_hi')+'</h3><div class="muted small center" style="margin-bottom:14px">'+T('ob_sub')+'</div>')+
     ('<div class="field"><label>'+T('name_q')+'</label><input id="obName" value="')+esc(S.profile.name)+('" placeholder="'+T('ob_name_ph')+'" maxlength="24"></div>')+
     ('<div class="field"><label>'+T('langs_title')+'</label><div id="obLangs">')+langs+'</div></div>'+
     ('<div class="field"><label>'+T('per_day_label')+' <b id="obGoalVal">10</b></label><input type="range" id="obGoal" min="5" max="40" step="5" value="10" oninput="document.getElementById(\'obGoalVal\').textContent=this.value" style="padding:0;border:0;background:none;min-height:44px"></div>')+
     ('<button class="btn" onclick="App.obDone()">'+T('start_course')+' ')+IC.right+'</button>');
 }
-function obLang(l){S.lang=l;document.querySelectorAll('#obLangs .langopt').forEach(b=>b.classList.toggle('on',b.dataset.l===l));haptic('light');}
+function obLang(l){if(!LANGS[l])return;if(langLocked(l)){toast(uiL()==='ru'?'Этот язык доступен в Premium. Сначала выбери бесплатный язык.':'This language requires Premium. Choose a free language first.');return;}S.lang=l;document.querySelectorAll('#obLangs .langopt').forEach(b=>b.classList.toggle('on',b.dataset.l===l));haptic('light');}
 function obDone(){S.dailyGoal=Number(document.getElementById('obGoal').value);const n=document.getElementById('obName');if(n&&n.value.trim())S.profile.name=n.value.trim().slice(0,24);S.profile.nameManual=!(S.profile.tg&&S.profile.name===S.profile.tg.name.slice(0,24));S.onboarded=true;pushLog('cap',(T('log_course_started')+' ')+langName(S.lang));save();closeModal();render();toast(T('ob_go'));if(S.lang==='ru'&&uiL()==='ru')openRuLevel();}
 
 /* ============================ Public API ============================ */
@@ -2146,7 +2191,7 @@ window.App={setUiLang,setRuLevel,openRuLevel,
   editProfile,profileName,pickAvatar,pickTgPhoto,useTgName,saveProfile,buyFreeze,openCoins,
   openBell,toggleRemind,setRemindTime,
   setLang,setLevel,setGoal,toggleTheme,setTheme,toggleSound,
-  openLangs,switchLang,langsFilter,openPaywall,buyPremium,sendPromo,resetAll,doReset,obLang,obDone
+  openLangs,switchLang,langsFilter,openPaywall,buyPremium,sendPromo,retryPremium,resetAll,doReset,obLang,obDone
 };
 
 /* ============================ Boot ============================ */
@@ -2157,6 +2202,8 @@ function syncCloud(){if(!(TG&&TG.CloudStorage))return;try{TG.CloudStorage.getIte
     S.theme=light?'light':'dark';
   }
   applyThemeVars();render();if(!S.onboarded)onboarding();loadTG();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&TG&&TG.initData)refreshPremium();});
+  setInterval(()=>{if(document.visibilityState==='visible'&&TG&&TG.initData)refreshPremium();},300000);
 })();
 </script>
 </body>
