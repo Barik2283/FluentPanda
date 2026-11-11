@@ -1215,7 +1215,7 @@ const UI_STRINGS={
     ob_sub:"Веди меня по курсу: уроки открываются по порядку, за них капают монетки.",
     open:"Открыть",
     open_premium:"Открыть Premium",
-    pay_in_bot:"Оплата и промокоды работают в Telegram — открой бота @FluentPanda_bot",
+    pay_in_bot:"Открой личный чат с ботом: /buy — оплата, /promo КОД — промокод",
     pay_note:". Оплата Premium — Telegram Stars через бота, промокод даёт дни бесплатно.",
     pay_stars:"Оплатить 150 Stars",
     pay_cancel:"Оплата отменена",
@@ -1457,7 +1457,7 @@ const UI_STRINGS={
     ob_sub:"Follow me through the course: lessons unlock in order, and each one earns you coins.",
     open:"Unlock",
     open_premium:"Get Premium",
-    pay_in_bot:"Payments and promo codes work in Telegram — open @FluentPanda_bot",
+    pay_in_bot:"Open the bot chat: /buy to pay, /promo CODE for a promo code",
     pay_note:". Premium is paid with Telegram Stars via the bot; a promo code grants free days.",
     pay_stars:"Pay 150 Stars",
     pay_cancel:"Payment cancelled",
@@ -2110,7 +2110,7 @@ async function buyPremium(){
       }else if(status==='cancelled')toast(T('pay_cancel'));
       else toast(T('pay_in_bot'));
     });
-  }catch(e){toast(apiMessage('Оплата недоступна. Открой Telegram-бота или проверь настройки сервера.','Payment unavailable. Open the Telegram bot or check server settings.'));}
+  }catch(e){toast(apiMessage('Оплата в приложении недоступна. Открой чат с ботом и отправь /buy.','Payment in the app is unavailable. Open the bot chat and send /buy.'));}
 }
 async function sendPromo(){
   const el=document.getElementById('pwPromo'),code=((el&&el.value)||'').trim();
