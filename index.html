@@ -1348,6 +1348,7 @@ const UI_STRINGS={
     tr_lc:"перевод",
     try_again:"Попробовать снова",
     tts_na:"Озвучка недоступна в этом браузере",
+    tts_error:"Не удалось включить озвучку. Проверь громкость и синтез речи в настройках телефона.",
     turn_on_sound:"Включи звук в настройках",
     ui_lang:"Язык интерфейса",
     ui_lang_sub:"Кнопки и подсказки. Язык курса выбирается отдельно",
@@ -1590,6 +1591,7 @@ const UI_STRINGS={
     tr_lc:"translation",
     try_again:"Try again",
     tts_na:"Voice-over is not available in this browser",
+    tts_error:"Could not play audio. Check your volume and device text-to-speech settings.",
     turn_on_sound:"Turn on sound in Settings",
     ui_lang:"Interface language",
     ui_lang_sub:"Buttons and hints. The course language is chosen separately",
@@ -1730,17 +1732,22 @@ function pickVoice(tag){
 function setSpeaking(on){document.body.classList.toggle('speaking',!!on);}
 function stopSpeech(){SPEAK_ID++;try{if(AUD){AUD.pause();AUD=null;}}catch(e){}try{if('speechSynthesis'in window)window.speechSynthesis.cancel();}catch(e){}setSpeaking(false);}
 function playFile(url,rate){return new Promise(res=>{try{const a=new Audio(url);a.playbackRate=rate;a.preservesPitch=true;AUD=a;a.onplaying=()=>setSpeaking(true);a.onended=()=>{setSpeaking(false);res(true);};a.onerror=()=>{setSpeaking(false);res(false);};const p=a.play();if(p&&p.catch)p.catch(()=>{setSpeaking(false);res(false);});}catch(e){res(false);}});}
-async function ttsSpeak(text,lang,rate,id){
-  if(!('speechSynthesis'in window))return 'nosynth';
-  await waitVoices(700);if(id!==SPEAK_ID)return 'stopped';
-  const tag=LANGS[lang].tts,v=pickVoice(tag);
+function ttsSpeak(text,lang,rate,id){
+  if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined')return Promise.resolve('nosynth');
+  if(id!==SPEAK_ID)return Promise.resolve('stopped');
+  // Не ждём загрузки голосов и не откладываем speak: вызов должен оставаться внутри нажатия.
+  loadVoices();const tag=LANGS[lang].tts,v=pickVoice(tag),hadVoices=VOICES.length>0;
   return new Promise(res=>{
-    let done=false;const fin=r=>{if(done)return;done=true;setSpeaking(false);res(r);};
-    const u=new SpeechSynthesisUtterance(text);u.lang=tag;if(v)u.voice=v;u.rate=rate;u.pitch=1;u.volume=1;
-    u.onstart=()=>setSpeaking(true);u.onend=()=>fin(v||!VOICES.length?'ok':'novoice');u.onerror=()=>fin('error');
-    /* Chrome иногда «глотает» speak() сразу после cancel() — даём паузу; на некоторых Android onend не приходит — страхуемся таймером */
-    setTimeout(()=>{if(id!==SPEAK_ID)return fin('stopped');try{window.speechSynthesis.resume();window.speechSynthesis.speak(u);}catch(e){fin('error');}},70);
-    setTimeout(()=>fin(v?'ok':'novoice'),1800+text.length*110/rate);
+    let done=false,started=false,startTimer,endTimer;
+    const fin=r=>{if(done)return;done=true;clearTimeout(startTimer);clearTimeout(endTimer);if(id===SPEAK_ID)setSpeaking(false);res(id===SPEAK_ID?r:'stopped');};
+    try{
+      const u=new SpeechSynthesisUtterance(text);u.lang=tag;if(v)u.voice=v;u.rate=rate;u.pitch=1;u.volume=1;
+      u.onstart=()=>{if(done||id!==SPEAK_ID)return;started=true;clearTimeout(startTimer);setSpeaking(true);endTimer=setTimeout(()=>fin(v||!hadVoices?'ok':'novoice'),Math.max(4000,1800+text.length*160/rate));};
+      u.onend=()=>fin(v||!hadVoices?'ok':'novoice');
+      u.onerror=()=>fin('error');
+      startTimer=setTimeout(()=>fin(started?'ok':'error'),3000);
+      window.speechSynthesis.resume();window.speechSynthesis.speak(u);
+    }catch(e){fin('error');}
   });
 }
 async function say(text,opts){
@@ -1752,6 +1759,7 @@ async function say(text,opts){
   if(AUDIO_BASE&&opts.file){const ok=await playFile(AUDIO_BASE+lang+'/'+opts.file+'.mp3',opts.slow?0.72:1);if(ok)return true;if(id!==SPEAK_ID)return false;}
   const r=await ttsSpeak(text,lang,opts.slow?0.6:0.88,id);
   if(r==='nosynth')toast(T('tts_na'));
+  else if(r==='error')toast(T('tts_error'));
   else if(r==='novoice'&&!NOVOICE_WARNED[lang]){NOVOICE_WARNED[lang]=1;toast(T('novoice_1')+langName(lang)+T('novoice_2'));}
   return r==='ok';
 }
@@ -2002,7 +2010,8 @@ async function storyPlayAll(){
   stopSpeech();const id=SPEAK_ID,lines=STORY.s.lines;haptic('light');
   for(let i=0;i<lines.length;i++){
     if(id!==SPEAK_ID||!STORY)return;
-    await say(lines[i][1],{sid:id});
+    const ok=await say(lines[i][1],{sid:id});
+    if(!ok)return;
     await new Promise(r=>setTimeout(r,300));
   }
 }
