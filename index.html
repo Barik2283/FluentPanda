@@ -346,6 +346,76 @@ main[dir="rtl"] .lesson,main[dir="rtl"] .opt,main[dir="rtl"] .storycard{text-ali
 main[dir="rtl"] .path::before{left:auto;right:26px}
 main[dir="rtl"] .searchwrap svg{left:auto;right:13px}
 main[dir="rtl"] .searchwrap input{padding-left:14px;padding-right:42px}
+
+/* Fluent Panda refresh: a calmer, more readable learning space. */
+:root,html[data-theme="dark"]{
+  --bg:#15131d;--bg2:#1c1926;--card:#24212e;--card2:#302b3b;
+  --txt:#f8f6fb;--muted:#c0b9cb;--line:#494354;--acc:#c8b4ff;--acc2:#86d9d0;
+  --good:#7cdea7;--bad:#ff9aa9;--warn:#f5c978;--flame:#ffad83;--info:#9cc9ff;
+  --navbg:rgba(28,25,38,.97);--scrim:rgba(8,7,12,.72);--glow:rgba(183,155,255,.18);
+  --shadow:0 4px 16px rgba(0,0,0,.14);--onacc:#241b3c;
+  --hero:#332944;--hero-line:#58446e;--hero-soft:#dfd3ff;
+}
+html[data-theme="light"]{
+  --bg:#f7f6f9;--bg2:#ffffff;--card:#ffffff;--card2:#f0edf6;
+  --txt:#272233;--muted:#6c6675;--line:#e3deea;--acc:#6741bc;--acc2:#167e78;
+  --good:#157c4c;--bad:#b62e4e;--warn:#976019;--flame:#be582d;--info:#2561a0;
+  --navbg:rgba(255,255,255,.97);--scrim:rgba(31,25,42,.46);--glow:rgba(103,65,188,.15);
+  --shadow:0 4px 16px rgba(39,27,58,.06);--onacc:#fff;
+  --hero:#eae4f8;--hero-line:#d9cdef;--hero-soft:#4c327f;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;letter-spacing:0;line-height:1.5}
+body::before,body::after{display:none}
+#app{max-width:540px}
+.hdr{padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--line);gap:8px;backdrop-filter:none}
+.hdrtitle h1{font-size:16px;letter-spacing:-.02em}.hdrtitle h1 .fp{background:none;color:var(--txt)}
+.brandlogo{filter:none}.langsw{background:none;border:0;padding:0;margin-top:2px;color:var(--muted);font-size:12px}
+.hpill,.iconbtn{background:var(--card);border:1px solid var(--line);box-shadow:none}
+.hpill{padding:0 9px;min-height:44px}.iconbtn{border-radius:12px}.avatarbtn{border-color:var(--line)}
+main{padding:18px 16px 110px}#main{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+.card,.flash,.storycard,.langopt,.wrow,.srow,.opt{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:none}
+.card{padding:18px}.h2{font-size:13px;letter-spacing:.06em;margin:24px 0 12px;color:var(--muted)}.h2::before{display:none}
+.small{font-size:13px}.note{font-size:13px;line-height:1.5}.pill{font-size:12px}
+.btn{background:var(--acc);color:var(--onacc);border-radius:11px;box-shadow:none;min-height:50px}
+.btn.sec{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+.btn.good{background:var(--goodbg);color:var(--good);border:1px solid var(--good)}
+.seg{border-radius:12px;background:var(--card2)}.seg button{border-radius:8px}.seg button.on{background:var(--acc);color:var(--onacc);box-shadow:none}
+input,select{border-radius:10px}.chip{min-height:44px;background:var(--card);color:var(--muted)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
+nav{bottom:calc(10px + env(safe-area-inset-bottom,0px));width:calc(100% - 24px);max-width:516px;border-radius:16px;padding:5px;background:var(--navbg);box-shadow:0 8px 24px rgba(20,12,32,.12)}
+nav button{min-height:56px;font-size:11px;border-radius:11px;gap:2px}
+nav button.on{color:var(--acc);background:var(--card2)}nav button.on .ni{background:none;box-shadow:none;color:var(--acc)}
+.ni{height:27px;border-radius:8px}.sheet{border-radius:18px 18px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.sheet h3{font-size:22px}.lggrid{gap:10px}.lgitem{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.lgitem.on{border:2px solid var(--acc);box-shadow:none}.lgbar{background:var(--card2)}
+.lgbar i,.bar i,.sbar .prog i{background:var(--acc)}
+.path{padding:0}.path::before{left:21px;top:24px;bottom:24px;width:2px;background:var(--line)}
+.lesson{gap:12px;margin-bottom:10px;padding:0}.node{width:44px;height:44px;border-radius:12px;font-size:16px;border:1px solid var(--line);background:var(--card2)}
+.lesson.cur .node{border-color:var(--acc);background:var(--acc);color:var(--onacc);box-shadow:none}.lesson.cur .node::after{display:none}
+.lesson.done .node{background:var(--goodbg);color:var(--good);border:1px solid var(--good)}
+.lcard{border-radius:12px;padding:13px 14px}.lesson.cur .lcard{background:var(--card);border-color:var(--acc)}
+.lesson.lock{opacity:.75}.lcard .lt b{font-size:15px}.lcard .ls,.storycard .ss{font-size:13px}
+main[dir="rtl"] .path::before{right:21px}
+.storycard{padding:16px;margin-bottom:10px}.storycard::before{height:3px;background:var(--acc)}
+.storycard.hard::before{background:var(--warn)}.storycard .sr{margin-top:14px}
+.wrow .sp,.sline .sp,.uexsp{width:44px;height:44px}.sline{border-radius:12px}.sline .who i{background:var(--acc);color:var(--onacc)}
+.srow{padding:14px}.srow .si{border-radius:10px}.flash{background:var(--card)}
+.pwHero{border-radius:12px;background:var(--card2);border:1px solid var(--line)}.pwStar svg{filter:none}
+.courseHero{background:var(--hero);border:1px solid var(--hero-line);border-radius:16px;padding:20px;box-shadow:none}
+.heroTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.heroCopy{min-width:0;flex:1}
+.heroEyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hero-soft)}
+.heroTitle{font-size:26px;line-height:1.15;letter-spacing:-.03em;margin:7px 0;color:var(--txt)}
+.heroSub{font-size:14px;color:var(--muted);line-height:1.4}.heroMascot{width:72px;height:72px;flex:0 0 auto}
+.heroProgress{display:flex;align-items:center;gap:10px;margin-top:18px;font-size:13px;color:var(--muted)}
+.heroProgress .bar{flex:1;margin:0;height:8px;background:var(--bg2)}.heroProgress b{color:var(--txt);white-space:nowrap}
+.heroActions{display:flex;gap:8px;margin-top:16px}.heroActions .btn{flex:1;min-width:0}
+.heroLang{min-width:48px;min-height:50px;padding:0 12px;border:1px solid var(--hero-line);border-radius:11px;background:var(--card);display:flex;align-items:center;justify-content:center;gap:8px}
+.premiumLink{display:flex;align-items:center;gap:10px;width:100%;min-height:54px;padding:10px 14px;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);text-align:left}
+.premiumLink .premiumIcon{color:var(--warn);display:flex}.premiumLink b{font-size:14px;flex:1}.premiumLink .arrow{display:flex;color:var(--muted)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+@media(max-width:440px){.srow:has(.seg){flex-wrap:wrap}.srow .seg{flex:1 0 100%!important;width:100%!important}}
+@media(max-width:360px){.hdr{padding-left:10px;padding-right:10px;gap:5px}.hpill{padding:0 7px}.brandlogo{display:none}.hdrtitle h1{font-size:13px;white-space:nowrap}.heroMascot{width:58px;height:58px}.heroTitle{font-size:23px}.courseHero{padding:16px}.srow{flex-wrap:wrap}.srow .seg{max-width:100%}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -1840,10 +1910,14 @@ function renderCourse(){
   const ls=lessonsFor(S.lang),st=lessonState(S.lang);
   const done=ls.filter(l=>st[l.id]&&st[l.id].done).length;
   let cur=ls.findIndex(l=>!(st[l.id]&&st[l.id].done));if(cur<0)cur=ls.length;
-  let html='<div class="homeRow"><button class="homeChip" onclick="App.openLangs()">'+flagHtml(S.lang,26)+'<b style="flex:1;text-align:left">'+esc(langName(S.lang))+'</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>'+
-    (S.premium?('<button class="homeChip prem" onclick="App.openPaywall()"><span style="color:var(--warn)">'+IC.star+'</span><b style="flex:1;text-align:left">'+T('prem_active')+'</b></button>'):
-      ('<button class="homeChip prem" onclick="App.openPaywall()"><span style="color:var(--warn)">'+IC.star+'</span><b style="flex:1;text-align:left">'+T('home_prem')+'</b></button>'))+'</div>'+
-    '<div class="card"><div class="row"><div style="flex:1"><b style="font-size:17px">'+esc(langName(S.lang))+(ruNative()?' · '+S.ruLevel:'')+'</b><div class="muted small" style="margin-top:3px">'+(ruNative()?T('ru_native_course'):T('linear_course'))+' · '+ls.length+' '+pl(ls.length,'lesson')+' · '+words().length+' '+pl(words().length,'word')+'</div><div class="bar"><i style="width:'+(ls.length?done/ls.length*100:0)+'%"></i></div></div><span class="pill acc">'+done+'/'+ls.length+'</span></div></div>';
+  const active=cur<ls.length?ls[cur]:null;
+  const heroTitle=apiMessage('Курс: '+langName(S.lang), 'Learn '+langName(S.lang));
+  const heroSub=(ruNative()?T('ru_native_course'):T('linear_course'))+' · '+ls.length+' '+pl(ls.length,'lesson')+' · '+words().length+' '+pl(words().length,'word');
+  let html='<section class="courseHero"><div class="heroTop"><div class="heroCopy"><div class="heroEyebrow">'+esc(apiMessage('Твой учебный план','Your learning plan'))+'</div><h2 class="heroTitle">'+esc(heroTitle)+'</h2><div class="heroSub">'+esc(heroSub)+'</div></div><img class="heroMascot" src="'+LOGO_URL+'" alt=""></div>'+
+    '<div class="heroProgress"><span>'+esc(apiMessage('Прогресс','Progress'))+'</span><span class="bar"><i style="width:'+(ls.length?done/ls.length*100:0)+'%"></i></span><b>'+done+'/'+ls.length+'</b></div>'+
+    '<div class="heroActions">'+(active?'<button class="btn" onclick="App.openLesson(\''+active.id+'\')">'+esc(done?apiMessage('Продолжить уроки','Continue learning'):T('start_course'))+' '+IC.right+'</button>':'<button class="btn" onclick="App.go(\'words\')">'+esc(T('review_btn'))+' '+IC.right+'</button>')+
+    '<button class="heroLang" onclick="App.openLangs()" aria-label="'+esc(apiMessage('Выбрать язык','Choose language'))+'">'+flagHtml(S.lang,24)+IC.right+'</button></div></section>'+
+    '<button class="premiumLink" onclick="App.openPaywall()"><span class="premiumIcon">'+IC.star+'</span><b>'+esc(S.premium?T('prem_active'):T('home_prem'))+'</b><span class="arrow">'+IC.right+'</span></button>';
   if(ruNative())html+='<button class="btn sec sm" style="margin-top:10px" onclick="App.openRuLevel()">'+IC.cap+' '+esc(T('rulvl_change',{l:S.ruLevel}))+'</button>';html+=('<div class="h2">'+T('course_path')+'</div><div class="path">');
   ls.forEach((l,i)=>{
     const d=st[l.id]&&st[l.id].done,locked=i>cur,isCur=i===cur;
