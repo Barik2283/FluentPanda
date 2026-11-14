@@ -1664,15 +1664,31 @@ S.premium=false;
 let premiumStatus='checking',premiumUntil=null,premiumSeq=0;
 function load(){try{const raw=localStorage.getItem(KEY);if(raw)return mergeState(JSON.parse(raw));}catch(e){}return defaultState();}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}scheduleCloudSave();}
-let cloudTimer=0;
-function scheduleCloudSave(){if(!(TG&&TG.CloudStorage))return;clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudSave,1500);}
+let cloudTimer=0,cloudSyncState='waiting',cloudWriteInFlight=false,cloudWriteQueued=false;
+function cloudNotice(){
+  if(!(TG&&TG.CloudStorage))return apiMessage('Прогресс хранится на этом устройстве.','Progress is stored on this device.');
+  if(cloudSyncState==='ready')return apiMessage('Прогресс хранится на устройстве; синхронизация Telegram доступна.','Progress is stored on this device; Telegram sync is available.');
+  if(cloudSyncState==='checking'||cloudSyncState==='waiting')return apiMessage('Проверяем сохранение в Telegram. Прогресс хранится на устройстве.','Checking Telegram sync. Progress is stored on this device.');
+  if(cloudSyncState==='too_large')return apiMessage('Прогресс слишком большой для Telegram CloudStorage и сохраняется только на этом устройстве.','Progress is too large for Telegram CloudStorage and is stored only on this device.');
+  if(cloudSyncState==='conflict')return apiMessage('Обнаружены разные данные. Синхронизация приостановлена, чтобы не потерять прогресс.','Different data was found. Sync is paused to protect progress.');
+  return apiMessage('Не удалось синхронизировать с Telegram. Прогресс хранится на устройстве.','Could not sync with Telegram. Progress is stored on this device.');
+}
+function updateCloudNotice(){if(TAB==='settings')renderSettings();}
+function scheduleCloudSave(){
+  if(!(TG&&TG.CloudStorage)||!['ready','too_large'].includes(cloudSyncState))return;
+  clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudSave,1500);
+}
 function cloudSave(){
+  if(!(TG&&TG.CloudStorage)||!['ready','too_large'].includes(cloudSyncState))return;
+  if(cloudWriteInFlight){cloudWriteQueued=true;return;}
   try{
-    /* CloudStorage: максимум 4096 символов на значение — журнал не синхронизируем */
-    const snap=Object.assign({},S,{log:[],unread:0});let v=JSON.stringify(snap);
-    if(v.length>4096){snap.stories={};snap.ach=S.ach;v=JSON.stringify(snap);}
-    if(v.length<=4096)TG.CloudStorage.setItem(KEY,v);
-  }catch(e){}
+    // Не затираем облачную копию неполными данными, если прогресс превысил лимит.
+    const snap=Object.assign({},S,{log:[],unread:0});delete snap.premium;
+    const v=JSON.stringify(snap);
+    if(v.length>4096){cloudSyncState='too_large';updateCloudNotice();return;}
+    cloudWriteInFlight=true;
+    TG.CloudStorage.setItem(KEY,v,(err)=>{cloudWriteInFlight=false;cloudSyncState=err?'error':'ready';updateCloudNotice();if(cloudWriteQueued&&!err){cloudWriteQueued=false;scheduleCloudSave();}});
+  }catch(e){cloudWriteInFlight=false;cloudSyncState='error';updateCloudNotice();}
 }
 function rolloverDay(){
   const t=todayStr();
@@ -2111,7 +2127,7 @@ function renderSettings(){
     '<div class="srow"><span class="si" style="color:var(--warn)">'+IC.star+'</span><span class="stx"><b>'+(S.premium?T('prem_active'):'Fluent Panda Premium')+('</b><span>'+T('prem_sub')+'</span></span><button class="btn sm ')+(S.premium?'sec':'')+'" style="width:auto;padding:0 14px" onclick="App.openPaywall()">'+(S.premium?T('unlocked'):T('open'))+'</button></div>'+
     ('<div class="h2">'+T('data')+'</div>')+
     ('<button class="btn bad sm" onclick="App.resetAll()">'+T('reset')+'</button>')+
-    ('<div class="note">'+T('stored_device'))+(TG?(' '+T('synced_cloud')):'')+(T('pay_note')+'</div>');
+    '<div class="note">'+esc(cloudNotice())+esc(T('pay_note'))+'</div>';
 }
 function setLang(l){if(!LANGS[l])return;if(langLocked(l)){openPaywall(l);return;}const ch=S.lang!==l;stopSpeech();SES=null;STORY=null;S.lang=l;save();header();renderSettings();haptic('light');toast((T('lang_colon')+' ')+langName(l));if(ch&&l==='ru'&&uiL()==='ru')openRuLevel();}
 function setLevel(v){S.level=v;save();header();toast((T('level')+' ')+v);}
@@ -2224,25 +2240,28 @@ window.App={setUiLang,setRuLevel,openRuLevel,
 /* ============================ Boot ============================ */
 function syncCloud(){
   if(!(TG&&TG.CloudStorage))return;
+  cloudSyncState='checking';
   try{
     const localSnapshot=()=>{const raw=localStorage.getItem(KEY);if(!raw)return raw;try{const state=JSON.parse(raw);delete state.premium;return JSON.stringify(state);}catch(e){return raw;}};
     const requestedLocal=localSnapshot();
     TG.CloudStorage.getItem(KEY,(err,val)=>{
-      if(err||!val)return;
+      if(err){cloudSyncState='error';updateCloudNotice();return;}
       try{
-        // Не перезаписываем действия пользователя, сделанные пока CloudStorage отвечал.
-        if(localSnapshot()!==requestedLocal)return;
-        const p=JSON.parse(val),remoteXp=Number(p.stats&&p.stats.xp)||0,localXp=Number(S.stats.xp)||0;
-        if(!hadLocalAtLaunch||remoteXp>localXp){
-          const premium=S.premium,localLang=S.lang;S=mergeState(p);S.premium=premium;
-          // Прогресс можно восстановить из облака, но локально выбранный язык не сбрасываем.
-          if(hadLocalAtLaunch&&LANGS[localLang])S.lang=localLang;
-          localStorage.setItem(KEY,JSON.stringify(S));
-          if(S.onboarded&&document.getElementById('obName'))closeModal();render();
+        // При конфликте сохраняем обе копии вместо перезаписи одной из них.
+        if(val&&localSnapshot()!==requestedLocal){cloudSyncState='conflict';updateCloudNotice();return;}
+        if(val){
+          const p=JSON.parse(val),remoteXp=Number(p.stats&&p.stats.xp)||0,localXp=Number(S.stats.xp)||0;
+          if(!hadLocalAtLaunch||remoteXp>localXp){
+            const premium=S.premium,localLang=S.lang;S=mergeState(p);S.premium=premium;
+            if(hadLocalAtLaunch&&LANGS[localLang])S.lang=localLang;
+            localStorage.setItem(KEY,JSON.stringify(S));
+            if(S.onboarded&&document.getElementById('obName'))closeModal();render();
+          }
         }
-      }catch(e){}
+        cloudSyncState='ready';updateCloudNotice();scheduleCloudSave();
+      }catch(e){cloudSyncState='error';updateCloudNotice();}
     });
-  }catch(e){}
+  }catch(e){cloudSyncState='error';updateCloudNotice();}
 }
 (function boot(){
   if(!localStorage.getItem(KEY)){
