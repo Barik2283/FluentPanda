@@ -2295,10 +2295,10 @@ function renderSettings(){
     '<div class="h2">Premium</div>'+
     '<div class="srow"><span class="si" style="color:var(--warn)">'+IC.star+'</span><span class="stx"><b>'+(S.premium?T('prem_active'):'Fluent Panda Premium')+('</b><span>'+T('prem_sub')+'</span></span><button class="btn sm ')+(S.premium?'sec':'')+'" style="width:auto;padding:0 14px" onclick="App.openPaywall()">'+(S.premium?T('unlocked'):T('open'))+'</button></div>'+
     ('<div class="h2">'+T('legal_docs')+'</div><div class="legalLinks">')+
-    '<a href="privacy.html" target="_blank" rel="noopener">'+T('privacy_link')+' '+IC.right+'</a>'+
-    '<a href="terms.html" target="_blank" rel="noopener">'+T('terms_link')+' '+IC.right+'</a>'+
-    '<a href="pricing.html" target="_blank" rel="noopener">'+T('pricing_link')+' '+IC.right+'</a>'+
-    '<a href="support.html" target="_blank" rel="noopener">'+T('support_link')+' '+IC.right+'</a></div>'+
+    '<a href="https://telegra.ph/Politika-konfidencialnosti-11-15-66" target="_blank" rel="noopener">'+T('privacy_link')+' '+IC.right+'</a>'+
+    '<a href="https://telegra.ph/Polzovatelskoe-soglashenie-11-15-32" target="_blank" rel="noopener">'+T('terms_link')+' '+IC.right+'</a>'+
+    '<a href="https://telegra.ph/Ceny-i-tarify-11-15" target="_blank" rel="noopener">'+T('pricing_link')+' '+IC.right+'</a>'+
+    '<a href="https://telegra.ph/Podderzhka-11-15" target="_blank" rel="noopener">'+T('support_link')+' '+IC.right+'</a></div>'+
     ('<div class="h2">'+T('data')+'</div>')+
     ('<button class="btn bad sm" onclick="App.resetAll()">'+T('reset')+'</button>')+
     '<div class="note">'+esc(cloudNotice())+esc(T('pay_note'))+'</div>';
@@ -2317,7 +2317,7 @@ function openPaywall(lang){
     (S.premium?('<div class="note">'+T('prem_active')+' · '+T('coins_x2')+'</div>'):
       ('<button class="btn" onclick="App.buyPremium()">'+IC.star+' '+T('pay_stars')+'</button>'+
        '<div class="field" style="margin-top:12px"><label>'+T('promo_q')+'</label><div class="row" style="gap:8px"><input id="pwPromo" placeholder="PANDA-XXXXXX" maxlength="16" style="flex:1;text-transform:uppercase"><button class="btn sec sm" style="width:auto;padding:0 14px" onclick="App.sendPromo()">'+T('promo_apply')+'</button></div></div>'))+
-    '<div class="note legalPayLinks">'+T('legal_before_pay')+' <a href="pricing.html" target="_blank" rel="noopener">'+T('pricing_link')+'</a> · <a href="terms.html" target="_blank" rel="noopener">'+T('terms_link')+'</a> · <a href="privacy.html" target="_blank" rel="noopener">'+T('privacy_link')+'</a></div>'+langNotice+'<div class="note">'+esc(premiumStatusText())+'</div><button class="btn sec sm" style="margin-top:8px" onclick="App.retryPremium()">'+esc(apiMessage('Проверить статус снова','Check status again'))+'</button>'+
+    '<div class="note legalPayLinks">'+T('legal_before_pay')+' <a href="https://telegra.ph/Ceny-i-tarify-11-15" target="_blank" rel="noopener">'+T('pricing_link')+'</a> · <a href="https://telegra.ph/Polzovatelskoe-soglashenie-11-15-32" target="_blank" rel="noopener">'+T('terms_link')+'</a> · <a href="https://telegra.ph/Politika-konfidencialnosti-11-15-66" target="_blank" rel="noopener">'+T('privacy_link')+'</a></div>'+langNotice+'<div class="note">'+esc(premiumStatusText())+'</div><button class="btn sec sm" style="margin-top:8px" onclick="App.retryPremium()">'+esc(apiMessage('Проверить статус снова','Check status again'))+'</button>'+
     '<div class="note">'+esc(apiMessage('Если оплата в приложении недоступна, используй /buy в боте. Для доступа в приложении сервер должен быть подключён.','If in-app payment is unavailable, use /buy in the bot. App access requires a connected server.'))+'</div></div>'));
   haptic('light');
 }
