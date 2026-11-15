@@ -411,7 +411,7 @@ main[dir="rtl"] .path::before{right:21px}
 .heroActions{display:flex;gap:8px;margin-top:16px}.heroActions .btn{flex:1;min-width:0}
 .heroLang{min-width:48px;min-height:50px;padding:0 12px;border:1px solid var(--hero-line);border-radius:11px;background:var(--card);display:flex;align-items:center;justify-content:center;gap:8px}
 .premiumLink{display:flex;align-items:center;gap:10px;width:100%;min-height:54px;padding:10px 14px;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);text-align:left}
-.premiumLink .premiumIcon{color:var(--warn);display:flex}.premiumLink b{font-size:14px;flex:1}.premiumLink .arrow{display:flex;color:var(--muted)}
+.premiumLink .premiumIcon{color:var(--warn);display:flex}.premiumLink b{font-size:14px;flex:1}.premiumLink .arrow{display:flex;color:var(--muted)}.legalLinks{display:grid;gap:8px}.legalLinks a{display:flex;align-items:center;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;color:var(--txt);text-decoration:none;background:var(--card)}.legalLinks a:focus-visible,.legalLinks a:hover{border-color:var(--acc);background:var(--card2)}.legalPayLinks a{color:var(--acc2);text-underline-offset:3px}
 .sponsorAd{display:block;width:100%;margin-top:12px;padding:0;overflow:hidden;text-align:left;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:var(--shadow);transition:transform .12s,border-color .2s}
 .sponsorAd:active{transform:scale(.985)}.sponsorAd:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .sponsorAd img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--card2)}
@@ -1412,6 +1412,12 @@ const UI_STRINGS={
     search_ph:"Поиск слова или перевода",
     session_acc:"точность занятия",
     shop:"Магазин за монетки",
+    legal_docs:"Документы и поддержка",
+    privacy_link:"Политика конфиденциальности",
+    terms_link:"Пользовательское соглашение",
+    pricing_link:"Цены и тарифы",
+    support_link:"Поддержка",
+    legal_before_pay:"Перед оплатой ознакомьтесь с документами:",
     show_tr:"Показать перевод",
     slower:"Медленнее",
     slowly:"Медленно",
@@ -1662,6 +1668,12 @@ const UI_STRINGS={
     search_ph:"Search for a word or translation",
     session_acc:"session accuracy",
     shop:"Coin shop",
+    legal_docs:"Legal documents and support",
+    privacy_link:"Privacy policy",
+    terms_link:"User agreement",
+    pricing_link:"Prices and plans",
+    support_link:"Support",
+    legal_before_pay:"Please read the documents before payment:",
     show_tr:"Show translation",
     slower:"Slower",
     slowly:"Slowly",
@@ -2282,6 +2294,11 @@ function renderSettings(){
     '<div class="srow"><span class="si">'+IC.flame+('</span><span class="stx"><b>'+T('per_day_label')+' <span id="goalVal">')+S.dailyGoal+('</span></b><span>'+T('goal_sub')+'</span></span><input type="range" id="setGoal" min="5" max="40" step="5" value="')+S.dailyGoal+'" oninput="App.setGoal(this.value)" style="width:130px;flex:0 0 auto;padding:0;border:0;background:none;min-height:44px"></div>'+
     '<div class="h2">Premium</div>'+
     '<div class="srow"><span class="si" style="color:var(--warn)">'+IC.star+'</span><span class="stx"><b>'+(S.premium?T('prem_active'):'Fluent Panda Premium')+('</b><span>'+T('prem_sub')+'</span></span><button class="btn sm ')+(S.premium?'sec':'')+'" style="width:auto;padding:0 14px" onclick="App.openPaywall()">'+(S.premium?T('unlocked'):T('open'))+'</button></div>'+
+    ('<div class="h2">'+T('legal_docs')+'</div><div class="legalLinks">')+
+    '<a href="privacy.html" target="_blank" rel="noopener">'+T('privacy_link')+' '+IC.right+'</a>'+
+    '<a href="terms.html" target="_blank" rel="noopener">'+T('terms_link')+' '+IC.right+'</a>'+
+    '<a href="pricing.html" target="_blank" rel="noopener">'+T('pricing_link')+' '+IC.right+'</a>'+
+    '<a href="support.html" target="_blank" rel="noopener">'+T('support_link')+' '+IC.right+'</a></div>'+
     ('<div class="h2">'+T('data')+'</div>')+
     ('<button class="btn bad sm" onclick="App.resetAll()">'+T('reset')+'</button>')+
     '<div class="note">'+esc(cloudNotice())+esc(T('pay_note'))+'</div>';
@@ -2300,7 +2317,7 @@ function openPaywall(lang){
     (S.premium?('<div class="note">'+T('prem_active')+' · '+T('coins_x2')+'</div>'):
       ('<button class="btn" onclick="App.buyPremium()">'+IC.star+' '+T('pay_stars')+'</button>'+
        '<div class="field" style="margin-top:12px"><label>'+T('promo_q')+'</label><div class="row" style="gap:8px"><input id="pwPromo" placeholder="PANDA-XXXXXX" maxlength="16" style="flex:1;text-transform:uppercase"><button class="btn sec sm" style="width:auto;padding:0 14px" onclick="App.sendPromo()">'+T('promo_apply')+'</button></div></div>'))+
-    langNotice+'<div class="note">'+esc(premiumStatusText())+'</div><button class="btn sec sm" style="margin-top:8px" onclick="App.retryPremium()">'+esc(apiMessage('Проверить статус снова','Check status again'))+'</button>'+
+    '<div class="note legalPayLinks">'+T('legal_before_pay')+' <a href="pricing.html" target="_blank" rel="noopener">'+T('pricing_link')+'</a> · <a href="terms.html" target="_blank" rel="noopener">'+T('terms_link')+'</a> · <a href="privacy.html" target="_blank" rel="noopener">'+T('privacy_link')+'</a></div>'+langNotice+'<div class="note">'+esc(premiumStatusText())+'</div><button class="btn sec sm" style="margin-top:8px" onclick="App.retryPremium()">'+esc(apiMessage('Проверить статус снова','Check status again'))+'</button>'+
     '<div class="note">'+esc(apiMessage('Если оплата в приложении недоступна, используй /buy в боте. Для доступа в приложении сервер должен быть подключён.','If in-app payment is unavailable, use /buy in the bot. App access requires a connected server.'))+'</div></div>'));
   haptic('light');
 }
