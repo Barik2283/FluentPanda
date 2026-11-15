@@ -1434,11 +1434,18 @@ const UI_STRINGS={
     stored_device:"Прогресс хранится на устройстве",
     stories:"Истории",
     stories_colon:"историй:",
-    stories_note:"Сложные истории входят в Premium. Озвучка — синтез речи браузера, работает offline.",
+    stories_note:"Сложные истории можно открыть за 50 монет или в Premium. Озвучка — синтез речи браузера, работает offline.",
     stories_sub:"Короткие диалоги из жизни: читай, слушай и проверяй перевод. За дочитанную историю — монетки.",
     story_claim:"Забери награду за чтение.",
     story_done:"История дочитана",
     story_done_paid:"Монетки за неё уже получены — перечитывай сколько угодно.",
+    story_unlock_title:"Открыть историю",
+    story_unlock_sub:"Эта история открывается за монетки.",
+    story_price:"Цена: 50 монет",
+    buy_story:"Открыть за 50",
+    unlock_coins:"открыть за 50 монет",
+    story_unlocked:"История открыта",
+    log_bought_story:"Открыта история за",
     story_q:"история «{t}»",
     synced_cloud:"и синхронизируется через Telegram CloudStorage",
     tap_to_see:"нажми, чтобы увидеть перевод",
@@ -1677,11 +1684,18 @@ const UI_STRINGS={
     stored_device:"Progress is stored on this device",
     stories:"Stories",
     stories_colon:"stories:",
-    stories_note:"Hard stories are part of Premium. Voice-over uses the browser’s speech synthesis and works offline.",
+    stories_note:"Hard stories can be unlocked for 50 coins or with Premium. Voice-over uses the browser’s speech synthesis and works offline.",
     stories_sub:"Short real-life dialogues: read, listen and check the translation. Finish a story to earn coins.",
     story_claim:"Claim your reading reward.",
     story_done:"Story finished",
     story_done_paid:"You’ve already got the coins for this one — reread it as often as you like.",
+    story_unlock_title:"Unlock the story",
+    story_unlock_sub:"This story opens with coins.",
+    story_price:"Price: 50 coins",
+    buy_story:"Unlock for 50",
+    unlock_coins:"unlock for 50 coins",
+    story_unlocked:"Story unlocked",
+    log_bought_story:"Unlocked a story for",
     story_q:"story “{t}”",
     synced_cloud:"and synced via Telegram CloudStorage",
     tap_to_see:"tap to see the translation",
@@ -1744,6 +1758,7 @@ const ACH=[
   {id:'words30',ic:'check',name:'30 слов',desc:'Выучи 30 слов'}
 ];
 const FREEZE_COST=60;
+const STORY_COST=50;
 
 /* ============================ State ============================ */
 const KEY='lingua:v1';
@@ -1754,14 +1769,14 @@ function defaultState(){
   return {
     onboarded:false, lang:'en', level:'A1', uiLang:detectUiLang(), uiLangManual:false, ruLevel:'A1', dailyGoal:10, premium:false,
     theme:'dark', themeManual:false, sound:true, profile:{name:'',avatar:0,tgPhoto:true,nameManual:false,tg:null},
-    progress:{}, lessons:{}, stories:{}, ach:[], log:[], unread:0,
+    progress:{}, lessons:{}, stories:{}, storyUnlocks:{}, ach:[], log:[], unread:0,
     coins:0, coinsEarned:0, freezes:0,
     remind:{on:false,time:'19:00',last:''},
     stats:{streak:0,lastDay:'',todayDone:0,todayDate:todayStr(),xp:0,answers:0,correct:0},
     sessions:0
   };
 }
-function mergeState(p){const d=defaultState();if(p&&!p.uiLang)d.uiLang='ru';return Object.assign(d,p,{stats:Object.assign(d.stats,p.stats||{}),profile:Object.assign(d.profile,p.profile||{}),remind:Object.assign(d.remind,p.remind||{})});}
+function mergeState(p){const d=defaultState();if(p&&!p.uiLang)d.uiLang='ru';return Object.assign(d,p,{stats:Object.assign(d.stats,p.stats||{}),profile:Object.assign(d.profile,p.profile||{}),remind:Object.assign(d.remind,p.remind||{}),storyUnlocks:Object.assign(d.storyUnlocks,p.storyUnlocks||{})});}
 const hadLocalAtLaunch=(()=>{try{return !!localStorage.getItem(KEY);}catch(e){return false;}})();
 let S=load();
 // Сохранённые данные и параметры URL не подтверждают оплаченный доступ.
@@ -2123,8 +2138,8 @@ function renderStories(){
   const fl=list.filter(s=>SF==='all'||s.diff===SF);
   if(!fl.length)html+=('<div class="card center muted small">'+esc(list.length?T('filter_empty'):apiMessage('Для этого языка историй пока нет.','There are no stories for this language yet.'))+'</div>');
   fl.forEach(s=>{
-    const locked=s.diff==='hard'&&!S.premium,done=!!S.stories[s.id];
-    html+='<button class="storycard '+s.diff+'" onclick="App.openStory(\''+s.id+'\')"><span class="st"><b>'+esc(storyTitle(s))+'</b>'+(done?'<span class="pill good">'+IC.check+(' '+T('read_done')+'</span>'):(locked?'<span class="pill warn">'+IC.lock+' Premium</span>':'<span class="pill '+(s.diff==='easy'?'good':(s.diff==='medium'?'acc':'warn'))+'">'+diffName(s.diff)+'</span>'))+'</span><span class="ss"><bdi>'+esc(s.sub)+'</bdi> · '+s.lines.length+(' '+T('phrases_n')+'</span><span class="sr"><span class="coinTag">')+IC.coin+'+'+(15*(S.premium?2:1))+'</span><span class="muted small" style="margin-left:auto">'+(locked?T('unlock_premium'):(done?T('reread'):T('read_listen')))+' '+IC.right+'</span></span></button>';
+    const locked=s.diff==='hard'&&!S.premium&&!S.storyUnlocks[s.id],done=!!S.stories[s.id];
+    html+='<button class="storycard '+s.diff+'" onclick="App.openStory(\''+s.id+'\')"><span class="st"><b>'+esc(storyTitle(s))+'</b>'+(done?'<span class="pill good">'+IC.check+(' '+T('read_done')+'</span>'):(locked?'<span class="pill warn">'+IC.lock+' '+T('unlock_coins')+'</span>':'<span class="pill '+(s.diff==='easy'?'good':(s.diff==='medium'?'acc':'warn'))+'">'+diffName(s.diff)+'</span>'))+'</span><span class="ss"><bdi>'+esc(s.sub)+'</bdi> · '+s.lines.length+(' '+T('phrases_n')+'</span><span class="sr"><span class="coinTag">')+IC.coin+'+'+(15*(S.premium?2:1))+'</span><span class="muted small" style="margin-left:auto">'+(locked?T('unlock_coins'):(done?T('reread'):T('read_listen')))+' '+IC.right+'</span></span></button>';
   });
   html+=('<div class="note">'+T('stories_note')+'</div>');
   main.innerHTML=html;
@@ -2132,8 +2147,18 @@ function renderStories(){
 function storyFilter(f){SF=f;renderStories();haptic('light');}
 function openStory(id){if(langLocked(S.lang)){openPaywall();return;}
   const s=(STORIES[S.lang]||[]).find(x=>x.id===id);if(!s)return;
-  if(s.diff==='hard'&&!S.premium)return openPaywall();
+  if(s.diff==='hard'&&!S.premium&&!S.storyUnlocks[id])return unlockStory(id);
   STORY={s,i:0,tr:false};renderStoryReader();
+}
+function unlockStory(id){
+  const s=(STORIES[S.lang]||[]).find(x=>x.id===id);if(!s)return;
+  if(S.premium||S.storyUnlocks[id])return openStory(id);
+  modal('<h3>'+T('story_unlock_title')+'</h3><div class="muted small" style="margin-bottom:8px">'+esc(storyTitle(s))+'</div><div class="note" style="margin-bottom:14px">'+T('story_unlock_sub')+'<br><b>'+T('story_price')+'</b></div><button class="btn coin" onclick="App.buyStory(\''+id+'\')">'+IC.coin+' '+T('buy_story')+'</button><button class="btn sec" style="margin-top:10px" onclick="App.closeModal()">'+T('cancel')+'</button>');
+}
+function buyStory(id){
+  const s=(STORIES[S.lang]||[]).find(x=>x.id===id);if(!s)return;
+  if(S.coins<STORY_COST)return toast(T('not_enough')+' '+STORY_COST);
+  S.coins-=STORY_COST;S.storyUnlocks[id]=true;pushLog('book',T('log_bought_story')+' '+STORY_COST+' '+T('coins_n'));save();header();closeModal();toast(T('story_unlocked'));haptic('ok');openStory(id);
 }
 function renderStoryReader(){
   const st=STORY,s=st.s;
@@ -2183,6 +2208,7 @@ function renderProfile(){
     '<div class="tiles" style="margin-top:14px"><div class="tile"><b style="color:var(--flame)">'+S.stats.streak+('</b><span>'+T('days_row')+'</span></div><div class="tile"><b style="color:var(--warn)">')+S.coins+('</b><span>'+T('coins_gen')+'</span></div><div class="tile"><b style="color:var(--good)">')+acc+('%</b><span>'+T('accuracy')+'</span></div></div>')+
     '<div class="card" style="margin-top:14px"><div class="row">'+ring(Math.min(1,done/goal),T('daily_goal_lc'),done+'/'+goal)+('<div style="flex:1"><b style="font-size:15px">'+T('goal_today')+'</b><div class="muted small" style="margin-top:5px">')+(done>=goal?T('goal_done'):T('goal_left',{n:goal-done,w:pl(goal-done,'word')}))+('</div><div class="muted small" style="margin-top:6px">'+T('learned_total')+' <b style="color:var(--txt)">')+allLearned()+('</b> · '+T('lessons_colon')+' <b style="color:var(--txt)">')+doneLessons()+('</b> · '+T('stories_colon')+' <b style="color:var(--txt)">')+doneStories()+'</b></div></div></div></div>'+
     ('<div class="h2">'+T('shop')+'</div>')+
+    '<div class="srow"><span class="si" style="color:var(--warn)">'+IC.book+('</span><span class="stx"><b>'+T('stories')+'</b><span>'+T('unlock_coins')+'</span></span><button class="btn coin sm" style="width:auto;padding:0 14px" onclick="App.go(\'stories\')">')+IC.coin+' '+STORY_COST+'</button></div>'+
     '<div class="srow"><span class="si" style="color:var(--info)">'+IC.snow+('</span><span class="stx"><b>'+T('freeze')+' · ')+S.freezes+(' '+T('pcs')+'</b><span>'+T('freeze_sub')+'</span></span><button class="btn coin sm" style="width:auto;padding:0 14px" onclick="App.buyFreeze()">')+IC.coin+' '+FREEZE_COST+'</button></div>'+
     ('<div class="h2">'+T('achievements')+'</div><div class="achgrid">')+ACH.map(a=>'<div class="ach '+(S.ach.includes(a.id)?'on':'')+'"><span class="ai">'+IC[a.ic]+'</span><span><b>'+esc(achName(a))+'</b><span>'+esc(achDesc(a))+'</span></span></div>').join('')+'</div>'+
     ('<div class="h2">'+T('by_lang')+'</div><div class="card">')+perLang+'</div>'+
